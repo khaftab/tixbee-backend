@@ -16,6 +16,14 @@ build:
         manual: # mnaual will not build the image if the source files change. It will only sync the files. Ouiside of the sync block, the image will be built if the source files change. i.e. pakcage.json, tsconfig.json, etc.
           - src: "src/**/*.ts"
             dest: .
+    - image: khaftab/client
+      context: client
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "src/**/*.tsx"
+            dest: .
 # Explanation of terms:
 # apiVersion: Specifies the version of the Skaffold API being used.
 # kind: Defines the type of the configuration object (Config in this case).
