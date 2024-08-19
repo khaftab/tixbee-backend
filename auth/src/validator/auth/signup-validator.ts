@@ -4,9 +4,13 @@ import { BadRequestError } from "../../error/bad-request-error";
 
 export default [
   body("email")
+    .notEmpty()
+    .withMessage("Email is required")
+    .bail() // means if above validation fails then don't run below validations
     .trim()
     .isEmail()
     .withMessage("Email must be valid")
+    .bail()
     .normalizeEmail() // means it will convert the email to lowercase
     .custom(async (email) => {
       const emailId = await User.findOne({ email });

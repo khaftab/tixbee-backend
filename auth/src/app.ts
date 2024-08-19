@@ -4,16 +4,35 @@ import setRoutes from "./routes/routes";
 import { errorHandler } from "./middlewares/error-handler";
 import { NotFoundError } from "./error/not-found";
 import cookieSession from "cookie-session";
+var cors = require("cors");
 
 const app = express();
+// enable cors
+app.use(
+  cors({
+    origin: ["https://localhost:3200", "http://localhost:5173"],
+    credentials: true,
+  })
+);
 app.set("trust proxy", true);
 app.use(express.json());
 app.use(
   cookieSession({
     signed: false, // Disable encryption on cookie because JWT is already encrypted. And other services need to read the cookie as well where they might not know decryption algorithm.
-    secure: process.env.NODE_ENV !== "test", // Cookie will only be used if user is visiting our app over https connection. This is to make sure that cookie is not used over http connection.
+    secure: true, // Cookie will only be used if user is visiting our app over https connection. This is to make sure that cookie is not used over http connection.
+    sameSite: "none", // This is to make sure that cookie is used in cross domain requests.
+    // partitioned: true,
+    // domain: "ticket.dev",
+    expires: new Date(Date.now() + 60 * 60 * 1000 * 24 * 7), // 7 days
   })
 );
+
+app.use((req, res, next) => {
+  // Reset the cookie maxAge every time the user makes a request
+  req.sessionOptions.maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
+  next();
+});
+
 setRoutes(app);
 
 app.all("*", () => {
