@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { User } from "../models/User";
 import jwt from "jsonwebtoken";
-import { BadRequestError } from "../error/bad-request-error";
+import { BadRequestError } from "@kh-micro-srv/common";
 
 const currentUser = async (req: Request, res: Response) => {
   res.send({ currentUser: req.currentUser || null });

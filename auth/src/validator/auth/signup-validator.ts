@@ -1,6 +1,6 @@
 import { body } from "express-validator";
 import { User } from "../../models/User";
-import { BadRequestError } from "../../error/bad-request-error";
+import { BadRequestError } from "@kh-micro-srv/common";
 
 export default [
   body("email")

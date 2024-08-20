@@ -1,8 +1,8 @@
 import express from "express";
 import "express-async-errors";
 import setRoutes from "./routes/routes";
-import { errorHandler } from "./middlewares/error-handler";
-import { NotFoundError } from "./error/not-found";
+import { errorHandler } from "@kh-micro-srv/common";
+import { NotFoundError } from "@kh-micro-srv/common";
 import cookieSession from "cookie-session";
 var cors = require("cors");
 
@@ -19,8 +19,8 @@ app.use(express.json());
 app.use(
   cookieSession({
     signed: false, // Disable encryption on cookie because JWT is already encrypted. And other services need to read the cookie as well where they might not know decryption algorithm.
-    secure: true, // Cookie will only be used if user is visiting our app over https connection. This is to make sure that cookie is not used over http connection.
-    sameSite: "none", // This is to make sure that cookie is used in cross domain requests.
+    secure: process.env.NODE_ENV !== "test", // Cookie will only be used if user is visiting our app over https connection. This is to make sure that cookie is not used over http connection.
+    sameSite: process.env.NODE_ENV === "test" ? "strict" : "none", // This is to make sure that cookie is used in cross domain requests.
     // partitioned: true,
     // domain: "ticket.dev",
     expires: new Date(Date.now() + 60 * 60 * 1000 * 24 * 7), // 7 days
