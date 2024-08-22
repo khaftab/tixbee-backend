@@ -27,6 +27,8 @@ app.use(
   })
 );
 
+// The cookie will be in base64 format (done by cookie-session). To check the data in jwt website decode it to utf-8. The data will be in json format.
+
 app.use((req, res, next) => {
   // Reset the cookie maxAge every time the user makes a request
   req.sessionOptions.maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days

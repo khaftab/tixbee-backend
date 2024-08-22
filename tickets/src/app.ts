@@ -1,7 +1,7 @@
 import express from "express";
 import "express-async-errors";
-// import setRoutes from "./routes/routes";
-import { errorHandler } from "@kh-micro-srv/common";
+import setRoutes from "./routes/routes";
+import { currentuser, errorHandler } from "@kh-micro-srv/common";
 import { NotFoundError } from "@kh-micro-srv/common";
 import cookieSession from "cookie-session";
 var cors = require("cors");
@@ -27,13 +27,15 @@ app.use(
   })
 );
 
+app.use(currentuser);
+
 app.use((req, res, next) => {
   // Reset the cookie maxAge every time the user makes a request
   req.sessionOptions.maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
   next();
 });
 
-// setRoutes(app);
+setRoutes(app);
 
 app.all("*", () => {
   throw new NotFoundError();
