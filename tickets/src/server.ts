@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import app from "./app";
+import { natsWrapper } from "./nats-wrapper";
 
 const start = async () => {
   if (!process.env.JWT_KEY) {
@@ -8,7 +9,17 @@ const start = async () => {
   if (!process.env.MONGO_URI) {
     throw new Error("MONGO_URI must be defined for tickets");
   }
+  if (!process.env.NATS_URL) {
+    throw new Error("NATS_URL must be defined for tickets");
+  }
   try {
+    await natsWrapper.connect(process.env.NATS_URL);
+    natsWrapper.client.closed().then(() => {
+      console.log("NATS connection closed.");
+      process.exit(0); // will exit the node server when nats connection is closed.
+    });
+    process.on("SIGINT", natsWrapper.shutdown);
+    process.on("SIGTERM", natsWrapper.shutdown);
     await mongoose.connect(process.env.MONGO_URI);
     console.log("Connected to MongoDB");
     app.listen(3000, () => {
