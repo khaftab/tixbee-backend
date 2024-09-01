@@ -17,6 +17,8 @@ interface TicketDoc extends Document {
   title: string;
   price: number;
   userId: string;
+  version: number;
+  orderId?: string;
   // createdAt: Date; // Remove createdAt, updatedAt if the schema does not have timestamp.
   // updatedAt: Date;
 }
@@ -34,10 +36,14 @@ const ticketSchema = new Schema(
       type: String,
       required: true,
     },
+    orderId: {
+      type: String, // This will be null if the ticket is not reserved.
+    },
   },
   {
     timestamps: false,
-    versionKey: false,
+    versionKey: "version",
+    optimisticConcurrency: true,
     toJSON: {
       // This will ONLY modify the response if it is converted to JSON. In epxress res.send(user) implicitly converts the user to JSON. So, it will modify the JSON response. In nomral db calls, it will not modify the response.
       transform: (doc, ret) => {

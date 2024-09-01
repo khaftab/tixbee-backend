@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { Ticket } from "../models/Ticket";
-import { NotFoundError, NotAuthorizedError } from "@kh-micro-srv/common";
+import { NotFoundError, NotAuthorizedError, BadRequestError } from "@kh-micro-srv/common";
 import mongoose from "mongoose";
 import { TicketCreatedPublisher } from "../events/publishers/ticket-created-publisher";
 import { natsWrapper } from "../nats-wrapper";
@@ -20,6 +20,7 @@ const createTicket = async (req: Request, res: Response) => {
     title: ticket.title,
     price: ticket.price,
     userId: ticket.userId,
+    version: ticket.version,
   }); // it is better to use ticket.title rather than req.body.title. Because we might perform some pre-save hooks on the ticket model that could change the value.
   res.status(201).send(ticket);
 };
@@ -43,6 +44,9 @@ const updateTicket = async (req: Request, res: Response) => {
   if (!ticket) {
     throw new NotFoundError();
   }
+  if (ticket.orderId) {
+    throw new BadRequestError("Cannot edit a reserved ticket");
+  }
   if (ticket.userId !== req.currentUser!.id) {
     throw new NotAuthorizedError();
   }
@@ -53,7 +57,7 @@ const updateTicket = async (req: Request, res: Response) => {
     title: ticket.title,
     price: ticket.price,
     userId: ticket.userId,
-    // version: ticket.version,
+    version: ticket.version,
   });
   res.status(200).send(ticket);
 };
