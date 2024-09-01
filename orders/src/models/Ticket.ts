@@ -2,6 +2,7 @@ import { Schema, model, Document, Date, Model } from "mongoose";
 import { Order, OrderStatus } from "./Order";
 
 interface TicketAttrs {
+  _id?: string; // To create a new ticket with custom id.
   title: string;
   price: number;
 }
@@ -10,6 +11,7 @@ interface TicketDoc extends Document {
   title: string;
   price: number;
   isReserved(): Promise<boolean>;
+  version: number; // optimistic concurrency control will only be in action, when you try to update the document using save() method. It will not work with findOneAndUpdate() and other method that does not use save() method. Hence, it also does not increment the version number.
 }
 
 const ticketSchema = new Schema(
@@ -26,7 +28,8 @@ const ticketSchema = new Schema(
   },
   {
     timestamps: false,
-    versionKey: false,
+    versionKey: "version", // Version key is not Required to work with optimistic concurrency control. We are adding this for better debugging. Mongoose internally keep track of the version to handle the concurrency control. But the value is same (internal and versionKey).,
+    optimisticConcurrency: true, // Enable optimistic concurrency control. (Versioning)
     toJSON: {
       // This will ONLY modify the response if it is converted to JSON. In epxress res.send(user) implicitly converts the user to JSON. So, it will modify the JSON response. In nomral db calls, it will not modify the response.
       transform: (doc, ret) => {

@@ -14,6 +14,7 @@ interface OrderDoc extends Document {
   status: OrderStatus;
   expiresAt: Date;
   ticket: TicketDoc;
+  version: number;
 }
 const orderSchema = new Schema(
   {
@@ -37,7 +38,8 @@ const orderSchema = new Schema(
   },
   {
     timestamps: false,
-    versionKey: false,
+    versionKey: "version",
+    optimisticConcurrency: true,
     toJSON: {
       // This will ONLY modify the response if it is converted to JSON. In epxress res.send(user) implicitly converts the user to JSON. So, it will modify the JSON response. In nomral db calls, it will not modify the response.
       transform: (doc, ret) => {

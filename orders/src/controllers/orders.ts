@@ -42,6 +42,7 @@ const createOrder = async (req: Request, res: Response) => {
       userId: order.userId,
       status: order.status,
       expiresAt: order.expiresAt.toISOString(), // isoString (utc format) is used to standardize the date format across different timezones.
+      version: order.version,
       ticket: {
         id: ticket.id,
         price: ticket.price,
@@ -89,6 +90,7 @@ const deleteOrder = async (req: Request, res: Response) => {
 
   await new OrderCancelledPublisher(natsWrapper.client).publish({
     id: order[0].id,
+    version: order[0].version,
     ticket: {
       id: order[0].ticket.id,
     },
