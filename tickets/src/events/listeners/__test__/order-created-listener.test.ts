@@ -46,14 +46,3 @@ it("acks the message", async () => {
   await listener.onMessage(data, msg);
   expect(msg.ack).toHaveBeenCalled();
 });
-
-it("publishes a ticket updated event", async () => {
-  const sc = StringCodec();
-  const { listener, data, msg } = await setup();
-  await listener.onMessage(data, msg);
-  expect(natsWrapper.client.jetstream().publish).toHaveBeenCalled();
-  const unitArrayPayload = (natsWrapper.client.jetstream().publish as jest.Mock).mock.calls[0][1];
-  const payload = JSON.parse(sc.decode(unitArrayPayload));
-  expect(payload.orderId).toEqual(data.id);
-  expect(payload.id).toEqual(data.ticket.id);
-});

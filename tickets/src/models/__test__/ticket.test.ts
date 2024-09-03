@@ -12,7 +12,6 @@ it("implements optimistic concurrency control", async () => {
 
   // Save the ticket to the database
   await ticket.save();
-  console.log("Ticket: ", ticket);
 
   // Fetch the ticket twice
   const firstInstance = await Ticket.findById(ticket.id);

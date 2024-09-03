@@ -38,6 +38,7 @@ const ticketSchema = new Schema(
     },
     orderId: {
       type: String, // This will be null if the ticket is not reserved.
+      default: null,
     },
   },
   {
