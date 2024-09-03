@@ -1,0 +1,27 @@
+import { JsMsg } from "nats";
+import { Listener, ExpirationCompleteEvent, Subjects, OrderStatus } from "@kh-micro-srv/common";
+import { Order } from "../../models/Order";
+import { OrderCancelledPublisher } from "../publishers/order-cancelled-publisher";
+
+export class ExpirationCompleteListener extends Listener<ExpirationCompleteEvent> {
+  subject: Subjects.ExpirationComplete = Subjects.ExpirationComplete;
+  consumer_name = "orders";
+  // Had to provode type because ts thinks possibility of ressignment of subject (or use readonly keyword).
+
+  async onMessage(data: ExpirationCompleteEvent["data"], msg: JsMsg) {
+    const order = await Order.findById(data.orderId).populate("ticket");
+    if (!order) {
+      throw new Error("Order not found");
+    }
+    order.set({ status: OrderStatus.Cancelled });
+    await order.save();
+    await new OrderCancelledPublisher(this.nc).publish({
+      id: order.id,
+      version: order.version,
+      ticket: {
+        id: order.ticket.id,
+      },
+    });
+    msg.ack();
+  }
+}
