@@ -11,7 +11,7 @@ import { natsWrapper } from "../nats-wrapper";
 import { OrderCreatedPublisher } from "../events/publishers/order-created-publisher";
 import { OrderCancelledPublisher } from "../events/publishers/order-cancelled-publisher";
 
-const EXPIRATION_WINDOW_SECONDS = 1 * 30;
+const EXPIRATION_WINDOW_SECONDS = 3 * 60;
 
 const createOrder = async (req: Request, res: Response) => {
   // Find the ticket the user is trying to order in the database
