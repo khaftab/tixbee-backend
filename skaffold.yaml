@@ -48,6 +48,14 @@ build:
         manual:
           - src: "src/**/*.ts"
             dest: .
+    - image: khaftab/payments
+      context: payments
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "src/**/*.ts"
+            dest: .
 # Explanation of terms:
 # apiVersion: Specifies the version of the Skaffold API being used.
 # kind: Defines the type of the configuration object (Config in this case).
