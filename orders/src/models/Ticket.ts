@@ -5,11 +5,17 @@ interface TicketAttrs {
   _id?: string; // To create a new ticket with custom id.
   title: string;
   price: number;
+  category: string;
+  description: string;
+  imagePublicId: string;
 }
 
 interface TicketDoc extends Document {
   title: string;
   price: number;
+  category: string;
+  description: string;
+  imagePublicId: string;
   isReserved(): Promise<boolean>;
   version: number; // optimistic concurrency control will only be in action, when you try to update the document using save() method. It will not work with findOneAndUpdate() and other method that does not use save() method. Hence, it also does not increment the version number.
 }
@@ -24,6 +30,18 @@ const ticketSchema = new Schema(
       type: Number,
       required: true,
       min: 0,
+    },
+    category: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    imagePublicId: {
+      type: String,
+      required: true,
     },
   },
   {

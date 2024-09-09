@@ -20,18 +20,27 @@ it("fetches orders for a particular user", async () => {
   const ticket1 = new Ticket({
     title: "Concert 1",
     price: 10,
+    category: "concert",
+    imagePublicId: "123",
+    description: "describe",
   });
   await ticket1.save();
 
   const ticket2 = new Ticket({
     title: "Concert 2",
     price: 20,
+    category: "concert",
+    imagePublicId: "123",
+    description: "describe",
   });
   await ticket2.save();
 
   const ticket3 = new Ticket({
     title: "Concert 3",
     price: 30,
+    category: "concert",
+    imagePublicId: "123",
+    description: "describe",
   });
   await ticket3.save();
 
@@ -60,6 +69,9 @@ it("it fetches orders for a particular user", async () => {
   const ticket = new Ticket({
     title: "Concert play",
     price: 10,
+    category: "concert",
+    imagePublicId: "123",
+    description: "describe",
   });
   await ticket.save();
   const user = getCookie();
@@ -84,6 +96,9 @@ it("returns 404 if order does not belong to the user", async () => {
   const ticket = new Ticket({
     title: "Concert play",
     price: 10,
+    category: "concert",
+    imagePublicId: "123",
+    description: "describe",
   });
   await ticket.save();
   const user = getCookie();
@@ -102,6 +117,9 @@ it("returns 404 if order does not belong to the user for cancellation", async ()
   const ticket = new Ticket({
     title: "Concert play",
     price: 10,
+    category: "concert",
+    imagePublicId: "123",
+    description: "describe",
   });
   await ticket.save();
   const user = getCookie();
@@ -115,6 +133,9 @@ it("marks an order as cancelled", async () => {
   const ticket = new Ticket({
     title: "Concert play",
     price: 10,
+    category: "concert",
+    imagePublicId: "123",
+    description: "describe",
   });
   await ticket.save();
   const user = getCookie();
@@ -132,6 +153,9 @@ it("emits an order cancelled event", async () => {
   const ticket = new Ticket({
     title: "Concert play",
     price: 10,
+    category: "concert",
+    imagePublicId: "123",
+    description: "describe",
   });
   await ticket.save();
   const user = getCookie();

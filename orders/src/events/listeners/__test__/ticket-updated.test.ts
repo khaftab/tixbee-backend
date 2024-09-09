@@ -10,12 +10,18 @@ const updateSetup = async () => {
   const ticket = new Ticket({
     title: "concert",
     price: 20,
+    category: "concert",
+    imagePublicId: "123",
+    description: "describe",
   });
   await ticket.save();
   const data: TicketUpdatedEvent["data"] = {
     id: ticket.id,
     title: "new concert",
     price: 209,
+    category: "concert",
+    imagePublicId: "123",
+    description: "describe",
     userId: new mongoose.Types.ObjectId().toHexString(),
     version: ticket.version + 1,
   };

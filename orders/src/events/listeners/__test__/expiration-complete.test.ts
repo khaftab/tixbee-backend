@@ -12,6 +12,9 @@ const setup = async () => {
   const ticket = new Ticket({
     title: "concert",
     price: 20,
+    category: "concert",
+    imagePublicId: "123",
+    description: "describe",
   });
   await ticket.save();
 

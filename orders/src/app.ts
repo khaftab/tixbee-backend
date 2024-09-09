@@ -29,12 +29,6 @@ app.use(
 
 app.use(currentuser);
 
-app.use((req, res, next) => {
-  // Reset the cookie maxAge every time the user makes a request
-  req.sessionOptions.maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
-  next();
-});
-
 setRoutes(app);
 
 app.all("*", () => {

@@ -35,6 +35,9 @@ it("returns a 400 if the ticket is already reserved", async () => {
   const ticket = new Ticket({
     title: "My custom test ticket",
     price: 20,
+    category: "concert",
+    imagePublicId: "123",
+    description: "describe",
   });
   await ticket.save();
   const order = new Order({
@@ -53,6 +56,9 @@ it("reserves a ticket", async () => {
   const ticket = new Ticket({
     title: "My custom test ticket",
     price: 20,
+    category: "concert",
+    imagePublicId: "123",
+    description: "describe",
   });
   await ticket.save();
   await createOrder(ticket.id).expect(201);
@@ -65,6 +71,9 @@ it("emits an order created event", async () => {
   const ticket = new Ticket({
     title: "My custom test ticket",
     price: 20,
+    category: "concert",
+    imagePublicId: "123",
+    description: "describe",
   });
   await ticket.save();
   await createOrder(ticket.id).expect(201);
