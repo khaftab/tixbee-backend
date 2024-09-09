@@ -7,12 +7,15 @@ import { natsWrapper } from "../nats-wrapper";
 import { TicketUpdatePublisher } from "../events/publishers/ticket-update-publisher";
 
 const createTicket = async (req: Request, res: Response) => {
-  const { title, price } = req.body;
+  const { title, price, category, imagePublicId, description } = req.body;
 
   const ticket = new Ticket({
     title,
     price,
     userId: req.currentUser!.id, // we are sure that currentUser middleware will run before this middleware. And it is behind the requireAuth middleware.
+    category,
+    imagePublicId,
+    description,
   });
   await ticket.save();
   new TicketCreatedPublisher(natsWrapper.client).publish({

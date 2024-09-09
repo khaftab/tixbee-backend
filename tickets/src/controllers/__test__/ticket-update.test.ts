@@ -10,7 +10,13 @@ it("returns a 404 if the provided id does not exist", async () => {
   await request(app)
     .put(`/api/tickets/${id}`)
     .set("Cookie", getCookie())
-    .send({ title: "test", price: 20 })
+    .send({
+      title: "test",
+      price: 10,
+      category: "concert",
+      imagePublicId: "123",
+      description: "describe",
+    })
     .expect(404);
 });
 
@@ -24,7 +30,13 @@ it("returns a 401 if the user does not own the ticket", async () => {
   await request(app)
     .put(`/api/tickets/${response.body.id}`)
     .set("Cookie", getCookie())
-    .send({ title: "test", price: 100 })
+    .send({
+      title: "test",
+      price: 10,
+      category: "concert",
+      imagePublicId: "123",
+      description: "describe",
+    })
     .expect(401);
 
   const ticket = await Ticket.findById(response.body.id);
@@ -32,7 +44,7 @@ it("returns a 401 if the user does not own the ticket", async () => {
   expect(ticket!.title).toEqual("test");
 });
 
-it("returns a 400 if the user provides an invalid title or price", async () => {
+it("returns a 400 if the user provides an invalid title or price or category", async () => {
   const cookie = getCookie(); // User has be same to update the ticket
   const response = await request(app)
     .post("/api/tickets")
@@ -54,6 +66,11 @@ it("returns a 400 if the user provides an invalid title or price", async () => {
     .set("Cookie", cookie)
     .send({ title: "test", price: -20 })
     .expect(400);
+  await request(app)
+    .put(`/api/tickets/${response.body.id}`)
+    .set("Cookie", cookie)
+    .send({ title: "test", price: 20, category: "miscellaneous" })
+    .expect(400);
 });
 
 it("updates the ticket provided valid inputs", async () => {
@@ -61,16 +78,31 @@ it("updates the ticket provided valid inputs", async () => {
   const response = await request(app)
     .post("/api/tickets")
     .set("Cookie", cookie)
-    .send({ title: "test", price: 20 })
+    .send({
+      title: "test",
+      price: 10,
+      category: "concert",
+      imagePublicId: "123",
+      description: "describe",
+    })
     .expect(201);
   await request(app)
     .put(`/api/tickets/${response.body.id}`)
     .set("Cookie", cookie)
-    .send({ title: "test2", price: 100 })
+    .send({
+      title: "updated title",
+      price: 100,
+      category: "concert",
+      imagePublicId: "321",
+      description: "updated describe",
+    })
     .expect(200);
   const ticketResponse = await request(app).get(`/api/tickets/${response.body.id}`).send();
-  expect(ticketResponse.body.title).toEqual("test2");
+  expect(ticketResponse.body.title).toEqual("updated title");
   expect(ticketResponse.body.price).toEqual(100);
+  expect(ticketResponse.body.category).toEqual("concert");
+  expect(ticketResponse.body.imagePublicId).toEqual("321");
+  expect(ticketResponse.body.description).toEqual("updated describe");
 });
 
 it("publishes an event after updating a ticket", async () => {
@@ -78,12 +110,24 @@ it("publishes an event after updating a ticket", async () => {
   const response = await request(app)
     .post("/api/tickets")
     .set("Cookie", cookie)
-    .send({ title: "test", price: 20 })
+    .send({
+      title: "test",
+      price: 10,
+      category: "concert",
+      imagePublicId: "123",
+      description: "describe",
+    })
     .expect(201);
   await request(app)
     .put(`/api/tickets/${response.body.id}`)
     .set("Cookie", cookie)
-    .send({ title: "test2", price: 100 })
+    .send({
+      title: "updated title",
+      price: 100,
+      category: "concert",
+      imagePublicId: "321",
+      description: "updated describe",
+    })
     .expect(200);
   expect(natsWrapper.client.jetstream().publish).toHaveBeenCalled();
 });
@@ -93,7 +137,13 @@ it("rejects updates if the ticket is reserved", async () => {
   const response = await request(app)
     .post("/api/tickets")
     .set("Cookie", cookie)
-    .send({ title: "test", price: 20 })
+    .send({
+      title: "test",
+      price: 10,
+      category: "concert",
+      imagePublicId: "123",
+      description: "describe",
+    })
     .expect(201);
   const ticket = await Ticket.findById(response.body.id);
   ticket!.set({ orderId: new mongoose.Types.ObjectId().toHexString() });
@@ -101,6 +151,12 @@ it("rejects updates if the ticket is reserved", async () => {
   await request(app)
     .put(`/api/tickets/${response.body.id}`)
     .set("Cookie", cookie)
-    .send({ title: "test2", price: 100 })
+    .send({
+      title: "updated title",
+      price: 100,
+      category: "concert",
+      imagePublicId: "321",
+      description: "updated describe",
+    })
     .expect(400);
 });

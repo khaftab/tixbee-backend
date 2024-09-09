@@ -8,9 +8,12 @@ const setup = async () => {
   // Create an instance of the listener
   const listener = new OrderCreatedListener(natsWrapper.client);
   const ticket = new Ticket({
-    title: "concert",
+    title: "New title",
     price: 20,
     userId: new mongoose.Types.ObjectId().toHexString(),
+    category: "concert",
+    imagePublicId: "123",
+    description: "describe",
   });
   await ticket.save();
 

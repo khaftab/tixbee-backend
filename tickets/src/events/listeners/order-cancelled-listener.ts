@@ -16,3 +16,5 @@ export class OrderCancelledListener extends Listener<OrderCancelledEvent> {
     msg.ack();
   }
 }
+
+// Not pubslisheing an TicketUpdatedEvent here because we are not updating the ticket. We are just setting the orderId to null. Using findByIdAndUpdate method to not to update the versrion no. otherwise we will get a version error in future at order service.

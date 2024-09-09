@@ -1,17 +1,20 @@
-import { OrderCancelledEvent, Subjects } from "@kh-micro-srv/common";
+import { OrderCancelledEvent } from "@kh-micro-srv/common";
 import { Ticket } from "../../../models/Ticket";
 import { OrderCancelledListener } from "../order-cancelled-listener";
 import { natsWrapper } from "../../../nats-wrapper";
-import { JsMsg, StringCodec } from "nats";
+import { JsMsg } from "nats";
 import mongoose from "mongoose";
 const setup = async () => {
   // Create an instance of the listener
   const listener = new OrderCancelledListener(natsWrapper.client);
   const orderId = new mongoose.Types.ObjectId().toHexString();
   const ticket = new Ticket({
-    title: "concert",
+    title: "Title",
     price: 20,
     userId: new mongoose.Types.ObjectId().toHexString(),
+    category: "concert",
+    imagePublicId: "123",
+    description: "describe",
   });
   ticket.set({ orderId });
   await ticket.save();
@@ -32,7 +35,7 @@ const setup = async () => {
 };
 
 it("updates the ticket, publishes an event, and acks the message", async () => {
-  const { listener, data, msg, ticket, orderId } = await setup();
+  const { listener, data, msg, ticket } = await setup();
   await listener.onMessage(data, msg);
   const updatedTicket = await Ticket.findById(ticket.id);
   expect(updatedTicket!.orderId).toEqual(null);

@@ -17,6 +17,21 @@ export const getCookie = () => {
 
 // cookie-session middleware uses base64 data. So, jwt data should be in base64 format for both request and response.
 
-export const createTicket = (title?: string, price?: number) => {
-  return request(app).post("/api/tickets").set("Cookie", getCookie()).send({ title, price });
+export const createTicket = (
+  title?: string,
+  price?: number,
+  category?: string,
+  imagePublicId?: string,
+  description?: string
+) => {
+  return request(app)
+    .post("/api/tickets")
+    .set("Cookie", getCookie())
+    .send({
+      title,
+      price,
+      category: category || "concert",
+      imagePublicId: imagePublicId || "123",
+      description: description || "test",
+    });
 };

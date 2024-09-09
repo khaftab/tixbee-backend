@@ -25,7 +25,7 @@ it("returns an error if an invalid title is provided", async () => {
   await request(app)
     .post("/api/tickets")
     .set("Cookie", getCookie())
-    .send({ price: 10 })
+    .send({ price: -10, category: "concert", imagePublicId: "123", description: "describe" })
     .expect(400);
 });
 
@@ -34,7 +34,28 @@ it("returns an error if an invalid price is provided", async () => {
   await request(app)
     .post("/api/tickets")
     .set("Cookie", getCookie())
-    .send({ title: "test" })
+    .send({
+      title: "test",
+      price: -10,
+      category: "concert",
+      imagePublicId: "123",
+      description: "describe",
+    })
+    .expect(400);
+});
+
+it("returns an error if an invalid category is provided", async () => {
+  await createTicket("test", 20, "miscellaneous").expect(400);
+  await request(app)
+    .post("/api/tickets")
+    .set("Cookie", getCookie())
+    .send({
+      title: "test",
+      price: 10,
+      category: "miscellaneous",
+      imagePublicId: "123",
+      description: "describe",
+    })
     .expect(400);
 });
 
@@ -44,11 +65,17 @@ it("creates a ticket with valid inputs", async () => {
   expect(tickets.length).toEqual(0);
   const title = "test";
   const price = 20;
-  await createTicket(title, price).expect(201);
+  const category = "concert";
+  const imagePublicId = "123";
+  const description = "describe";
+  await createTicket(title, price, category, imagePublicId, description).expect(201);
   tickets = await Ticket.find({});
   expect(tickets.length).toEqual(1);
   expect(tickets[0].price).toEqual(price);
   expect(tickets[0].title).toEqual(title);
+  expect(tickets[0].category).toEqual(category);
+  expect(tickets[0].imagePublicId).toEqual(imagePublicId);
+  expect(tickets[0].description).toEqual(description);
 });
 
 // Get the ticket

@@ -1,9 +1,22 @@
 import { Schema, model, Document, Date, Model } from "mongoose";
 
+export const ticketCategory = {
+  conference: "Conference",
+  lecture: "Lecture",
+  workshop: "Workshop",
+  auction: "Auction",
+  concert: "Concert",
+  theater: "Theater",
+  other: "Other",
+};
+
 interface UserAttrs {
   title: string;
   price: number;
   userId: string;
+  category: string;
+  description: string;
+  imagePublicId: string;
 }
 // We can also use the UserAttrs interface / or leave it as the output interface but it will not have createdAt and updatedAt properties.
 
@@ -18,7 +31,10 @@ interface TicketDoc extends Document {
   price: number;
   userId: string;
   version: number;
-  orderId?: string;
+  orderId: string;
+  category: string;
+  description: string;
+  imagePublicId: string;
   // createdAt: Date; // Remove createdAt, updatedAt if the schema does not have timestamp.
   // updatedAt: Date;
 }
@@ -30,6 +46,19 @@ const ticketSchema = new Schema(
     },
     price: {
       type: Number,
+      required: true,
+    },
+    category: {
+      type: String,
+      required: true,
+      enum: Object.keys(ticketCategory),
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    imagePublicId: {
+      type: String,
       required: true,
     },
     userId: {
