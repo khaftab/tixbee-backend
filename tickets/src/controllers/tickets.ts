@@ -22,6 +22,9 @@ const createTicket = async (req: Request, res: Response) => {
     id: ticket.id,
     title: ticket.title,
     price: ticket.price,
+    category: ticket.category,
+    imagePublicId: ticket.imagePublicId,
+    description: ticket.description,
     userId: ticket.userId,
     version: ticket.version,
   }); // it is better to use ticket.title rather than req.body.title. Because we might perform some pre-save hooks on the ticket model that could change the value.
@@ -59,6 +62,9 @@ const updateTicket = async (req: Request, res: Response) => {
     id: ticket.id,
     title: ticket.title,
     price: ticket.price,
+    category: ticket.category,
+    imagePublicId: ticket.imagePublicId,
+    description: ticket.description,
     userId: ticket.userId,
     version: ticket.version,
   });
