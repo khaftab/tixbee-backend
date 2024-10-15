@@ -8,7 +8,16 @@ export class TicketUpdatedListener extends Listener<TicketUpdatedEvent> {
   // Had to provode type because ts thinks possibility of ressignment of subject (or use readonly keyword).
 
   async onMessage(data: TicketUpdatedEvent["data"], msg: JsMsg) {
-    const { id: _id, title, price, version, category, imagePublicId, description } = data;
+    const {
+      id: _id,
+      title,
+      price,
+      version,
+      category,
+      thumbnailImagePublicId,
+      ticketImagePublicId,
+      description,
+    } = data;
     /* 
      // Alternative way to update the ticket
      const ticket = await Ticket.findOneAndUpdate(
@@ -20,7 +29,14 @@ export class TicketUpdatedListener extends Listener<TicketUpdatedEvent> {
     if (!ticket) {
       throw new Error("Ticket not found");
     }
-    ticket.set({ title, price, category, imagePublicId, description });
+    ticket.set({
+      title,
+      price,
+      category,
+      thumbnailImagePublicId,
+      ticketImagePublicId,
+      description,
+    });
     await ticket.save();
     msg.ack();
   }

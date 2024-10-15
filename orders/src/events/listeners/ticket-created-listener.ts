@@ -8,13 +8,22 @@ export class TicketCreatedListener extends Listener<TicketCreatedEvent> {
   // Had to provode type because ts thinks possibility of ressignment of subject (or use readonly keyword).
 
   async onMessage(data: TicketCreatedEvent["data"], msg: JsMsg) {
-    const { id: _id, title, price, category, imagePublicId, description } = data;
+    const {
+      id: _id,
+      title,
+      price,
+      category,
+      thumbnailImagePublicId,
+      ticketImagePublicId,
+      description,
+    } = data;
     const ticket = await new Ticket({
       _id,
       title,
       price,
       category,
-      imagePublicId,
+      thumbnailImagePublicId,
+      ticketImagePublicId,
       description,
     });
     await ticket.save();

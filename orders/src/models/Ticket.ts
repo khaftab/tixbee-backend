@@ -7,7 +7,8 @@ interface TicketAttrs {
   price: number;
   category: string;
   description: string;
-  imagePublicId: string;
+  thumbnailImagePublicId: string;
+  ticketImagePublicId: string;
 }
 
 interface TicketDoc extends Document {
@@ -15,7 +16,8 @@ interface TicketDoc extends Document {
   price: number;
   category: string;
   description: string;
-  imagePublicId: string;
+  thumbnailImagePublicId: string;
+  ticketImagePublicId: string;
   isReserved(): Promise<boolean>;
   version: number; // optimistic concurrency control will only be in action, when you try to update the document using save() method. It will not work with findOneAndUpdate() and other method that does not use save() method. Hence, it also does not increment the version number.
 }
@@ -39,7 +41,11 @@ const ticketSchema = new Schema(
       type: String,
       required: true,
     },
-    imagePublicId: {
+    thumbnailImagePublicId: {
+      type: String,
+      required: true,
+    },
+    ticketImagePublicId: {
       type: String,
       required: true,
     },

@@ -37,7 +37,7 @@ const orderSchema = new Schema(
     },
   },
   {
-    timestamps: false,
+    timestamps: true,
     versionKey: "version",
     optimisticConcurrency: true,
     toJSON: {

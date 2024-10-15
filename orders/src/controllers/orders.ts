@@ -65,12 +65,56 @@ const getOrderById = async (req: Request, res: Response) => {
   if (!order.length) {
     throw new NotFoundError();
   }
+  if (order[0].status !== OrderStatus.Complete) {
+    order[0].ticket.ticketImagePublicId = "";
+  }
   res.status(200).send(order[0]);
 };
 
 const getAllOrders = async (req: Request, res: Response) => {
-  const orders = await Order.find({ userId: req.currentUser!.id }).populate("ticket");
-  res.status(200).send(orders);
+  const sortOrder = req.query.sortOrder === "asc" ? 1 : -1;
+  const sortBy = req.query.sortBy === "price" ? "ticket.price" : "updatedAt";
+  const filterBy = req.query.filterBy || "all";
+
+  // Create the status filter
+  let statusFilter = {};
+  if (filterBy === "complete") {
+    statusFilter = { status: "complete" };
+  } else if (filterBy === "cancelled") {
+    statusFilter = { status: "cancelled" };
+  } else if (filterBy === "all") {
+    statusFilter = { status: { $in: ["created", "complete", "cancelled", "awaiting:payment"] } };
+  }
+
+  const currentPage = typeof req.query.page === "string" ? parseInt(req.query.page) : 1;
+  const itemsPerPage = 6;
+
+  const orders = await Order.aggregate([
+    { $match: { userId: req.currentUser!.id, ...statusFilter } },
+    { $lookup: { from: "tickets", localField: "ticket", foreignField: "_id", as: "ticket" } },
+    { $unwind: "$ticket" },
+    { $sort: { [sortBy]: sortOrder } },
+    { $skip: (currentPage - 1) * itemsPerPage },
+    { $limit: itemsPerPage },
+    {
+      $addFields: {
+        id: "$_id",
+        "ticket.id": "$ticket._id",
+        "ticket.ticketImagePublicId": {
+          $cond: {
+            if: { $ne: ["$status", "complete"] },
+            then: "",
+            else: "$ticket.ticketImagePublicId",
+          },
+        },
+      },
+    },
+    { $project: { _id: 0, __v: 0, "ticket._id": 0, "ticket.__v": 0 } },
+  ]);
+
+  const totalOrders = await Order.countDocuments({ userId: req.currentUser!.id });
+
+  res.status(200).send({ orders, totalOrders });
 };
 
 const deleteOrder = async (req: Request, res: Response) => {

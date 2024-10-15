@@ -1,5 +1,5 @@
 import { JsMsg } from "nats";
-import { Listener, PaymentCreatedEvent, Subjects } from "@kh-micro-srv/common";
+import { Listener, OrderStatus, PaymentCreatedEvent, Subjects } from "@kh-micro-srv/common";
 import { Ticket } from "../../models/Ticket";
 import { Order } from "../../models/Order";
 
@@ -13,7 +13,7 @@ export class PaymentCreatedListener extends Listener<PaymentCreatedEvent> {
     if (!order) {
       throw new Error("Order not found");
     }
-    order.set({ status: "complete" });
+    order.set({ status: OrderStatus.Complete });
     await order.save();
     // After completing the order, we don't need to publish event like OrderUpdatedEvent bcs no one is updating order after being complete.
     msg.ack();
