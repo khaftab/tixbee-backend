@@ -7,9 +7,14 @@ export class OrderCancelledListener extends Listener<OrderCancelledEvent> {
   consumer_name = "tickets-consumer";
 
   async onMessage(data: OrderCancelledEvent["data"], msg: JsMsg) {
-    const ticket = await Ticket.findByIdAndUpdate(data.ticket.id, {
-      orderId: null,
-    });
+    const ticket = await Ticket.findByIdAndUpdate(
+      data.ticket.id,
+      {
+        orderId: null,
+        orderStatus: null,
+      },
+      { timestamps: false }
+    );
     if (!ticket) {
       throw new Error("Ticket not found");
     }

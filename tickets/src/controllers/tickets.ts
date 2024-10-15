@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Ticket } from "../models/Ticket";
+import { Ticket, ticketCategory } from "../models/Ticket";
 import { NotFoundError, NotAuthorizedError, BadRequestError } from "@kh-micro-srv/common";
 import mongoose from "mongoose";
 import { TicketCreatedPublisher } from "../events/publishers/ticket-created-publisher";
@@ -7,14 +7,16 @@ import { natsWrapper } from "../nats-wrapper";
 import { TicketUpdatePublisher } from "../events/publishers/ticket-update-publisher";
 
 const createTicket = async (req: Request, res: Response) => {
-  const { title, price, category, imagePublicId, description } = req.body;
+  const { title, price, category, thumbnailImagePublicId, ticketImagePublicId, description } =
+    req.body;
 
   const ticket = new Ticket({
     title,
     price,
     userId: req.currentUser!.id, // we are sure that currentUser middleware will run before this middleware. And it is behind the requireAuth middleware.
     category,
-    imagePublicId,
+    thumbnailImagePublicId,
+    ticketImagePublicId,
     description,
   });
   await ticket.save();
@@ -23,10 +25,12 @@ const createTicket = async (req: Request, res: Response) => {
     title: ticket.title,
     price: ticket.price,
     category: ticket.category,
-    imagePublicId: ticket.imagePublicId,
+    thumbnailImagePublicId: ticket.thumbnailImagePublicId,
+    ticketImagePublicId: ticket.ticketImagePublicId,
     description: ticket.description,
     userId: ticket.userId,
     version: ticket.version,
+    orderId: null,
   }); // it is better to use ticket.title rather than req.body.title. Because we might perform some pre-save hooks on the ticket model that could change the value.
   res.status(201).send(ticket);
 };
@@ -37,15 +41,66 @@ const getTicketById = async (req: Request, res: Response) => {
   if (!ticket) {
     throw new NotFoundError();
   }
+  if (ticket.userId !== (req.currentUser && req.currentUser.id)) {
+    ticket.ticketImagePublicId = "";
+  }
   res.status(200).send(ticket);
 };
 
-const getAllTickets = async (req: Request, res: Response) => {
-  const tickets = await Ticket.find({});
-  res.status(200).send(tickets);
+const getTicketsByCategory = async (req: Request, res: Response) => {
+  const category = req.params.category;
+  const sortOrder = req.query.sortOrder === "asc" ? 1 : -1;
+  const sortBy = req.query.sortBy === "price" ? "price" : "updatedAt";
+  const filterBy = req.query.filterBy || "all"; // mytickets, all. myTickets will show only the tickets created by the user.
+  const currentPage = typeof req.query.page === "string" ? parseInt(req.query.page) : 1;
+  const itemPerPage = 6;
+
+  if (!category || !Object.keys(ticketCategory).includes(category)) {
+    throw new BadRequestError("Category does not exist");
+  }
+
+  let filter: any = { category, orderStatus: { $ne: "complete" } };
+
+  if (category === "all") {
+    // get all tickets
+    delete filter.category;
+  }
+  if (filterBy === "mytickets") {
+    req.currentUser && (filter.userId = req.currentUser!.id);
+    if (!req.currentUser) {
+      throw new NotAuthorizedError();
+    }
+  }
+
+  const tickets = await Ticket.aggregate([
+    { $match: filter },
+    { $sort: { [sortBy]: sortOrder } },
+    { $skip: (currentPage - 1) * itemPerPage },
+    { $limit: itemPerPage },
+    {
+      $addFields: {
+        id: "$_id",
+        // "id": "$_id",
+        ticketImagePublicId: {
+          $cond: {
+            if: { $ne: ["$userId", req.currentUser && req.currentUser.id] },
+            then: "",
+            else: "$ticketImagePublicId",
+          },
+        },
+      },
+    },
+    { $project: { _id: 0, __v: 0 } },
+  ]);
+
+  const totalTickets = await Ticket.countDocuments(filter);
+
+  res.status(200).send({ tickets, totalTickets });
 };
 
 const updateTicket = async (req: Request, res: Response) => {
+  console.log(req.body, "body");
+
   const ticket = await Ticket.findById(req.params.id);
   if (!ticket) {
     throw new NotFoundError();
@@ -63,12 +118,30 @@ const updateTicket = async (req: Request, res: Response) => {
     title: ticket.title,
     price: ticket.price,
     category: ticket.category,
-    imagePublicId: ticket.imagePublicId,
+    thumbnailImagePublicId: ticket.thumbnailImagePublicId,
+    ticketImagePublicId: ticket.ticketImagePublicId,
     description: ticket.description,
     userId: ticket.userId,
     version: ticket.version,
+    orderId: ticket.orderId,
   });
   res.status(200).send(ticket);
 };
 
-export { createTicket, getTicketById, getAllTickets, updateTicket };
+const deleteTicket = async (req: Request, res: Response) => {
+  const ticket = await Ticket.findById(req.params.id);
+  if (!ticket) {
+    throw new NotFoundError();
+  }
+  if (ticket.orderId) {
+    throw new BadRequestError("Cannot delete a reserved ticket");
+  }
+  if (ticket.userId !== req.currentUser!.id) {
+    throw new NotAuthorizedError();
+  }
+  // delete ticket
+  await ticket.deleteOne({ _id: ticket.id });
+  res.status(204).send({}); // 204 means no content
+};
+
+export { createTicket, getTicketById, getTicketsByCategory, updateTicket, deleteTicket };

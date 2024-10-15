@@ -23,12 +23,20 @@ const ticketValidator = [
       return Object.keys(ticketCategory).includes(category);
     })
     .withMessage("Invalid category provided"),
-  body("imagePublicId").not().isEmpty().bail().withMessage("Image cannot be empty"),
+  body("thumbnailImagePublicId").not().isEmpty().bail().withMessage("Image cannot be empty"),
+  body("ticketImagePublicId").not().isEmpty().bail().withMessage("Image cannot be empty"),
   body("description").not().isEmpty().bail().withMessage("Description cannot be empty"), // description length is checked in client side (since it contains html tags we need to count the characters without html tags)
   // throw error if other fields are provided
   body()
     .custom((body) => {
-      const fields = ["title", "price", "category", "imagePublicId", "description"];
+      const fields = [
+        "title",
+        "price",
+        "category",
+        "thumbnailImagePublicId",
+        "ticketImagePublicId",
+        "description",
+      ];
       const bodyFields = Object.keys(body);
       return bodyFields.every((field) => fields.includes(field));
     })

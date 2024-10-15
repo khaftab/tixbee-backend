@@ -8,6 +8,7 @@ export const ticketCategory = {
   concert: "Concert",
   theater: "Theater",
   other: "Other",
+  all: "All",
 };
 
 interface UserAttrs {
@@ -16,7 +17,8 @@ interface UserAttrs {
   userId: string;
   category: string;
   description: string;
-  imagePublicId: string;
+  thumbnailImagePublicId: string;
+  ticketImagePublicId: string;
 }
 // We can also use the UserAttrs interface / or leave it as the output interface but it will not have createdAt and updatedAt properties.
 
@@ -34,9 +36,11 @@ interface TicketDoc extends Document {
   orderId: string;
   category: string;
   description: string;
-  imagePublicId: string;
-  // createdAt: Date; // Remove createdAt, updatedAt if the schema does not have timestamp.
-  // updatedAt: Date;
+  thumbnailImagePublicId: string;
+  ticketImagePublicId: string;
+  orderStatus: string;
+  createdAt: Date; // Remove createdAt, updatedAt if the schema does not have timestamp.
+  updatedAt: Date;
 }
 const ticketSchema = new Schema(
   {
@@ -57,7 +61,11 @@ const ticketSchema = new Schema(
       type: String,
       required: true,
     },
-    imagePublicId: {
+    thumbnailImagePublicId: {
+      type: String,
+      required: true,
+    },
+    ticketImagePublicId: {
       type: String,
       required: true,
     },
@@ -69,9 +77,13 @@ const ticketSchema = new Schema(
       type: String, // This will be null if the ticket is not reserved.
       default: null,
     },
+    orderStatus: {
+      type: String,
+      default: null,
+    },
   },
   {
-    timestamps: false,
+    timestamps: true,
     versionKey: "version",
     optimisticConcurrency: true,
     toJSON: {
