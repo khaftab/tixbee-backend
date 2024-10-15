@@ -57,4 +57,26 @@ const signout = async (req: Request, res: Response) => {
   res.send({});
 };
 
-export { signin, signup, currentUser, signout };
+const updateUser = async (req: Request, res: Response) => {
+  const user = await User.findById(req.currentUser!.id);
+  console.log("Req body", user);
+
+  if (!user) throw new BadRequestError("User not found");
+
+  user.set({
+    billingAddress: {
+      ...req.body,
+    },
+  });
+  await user.save();
+  res.send(user);
+};
+
+const getUser = async (req: Request, res: Response) => {
+  const user = await User.findById(req.currentUser!.id);
+  if (!user) throw new BadRequestError("User not found");
+
+  res.send(user);
+};
+
+export { signin, signup, currentUser, signout, updateUser, getUser };

@@ -1,7 +1,7 @@
 import express from "express";
 import "express-async-errors";
 import setRoutes from "./routes/routes";
-import { errorHandler } from "@kh-micro-srv/common";
+import { currentuser, errorHandler } from "@kh-micro-srv/common";
 import { NotFoundError } from "@kh-micro-srv/common";
 import cookieSession from "cookie-session";
 var cors = require("cors");
@@ -29,11 +29,7 @@ app.use(
 
 // The cookie will be in base64 format (done by cookie-session). To check the data in jwt website decode it to utf-8. The data will be in json format.
 
-app.use((req, res, next) => {
-  // Reset the cookie maxAge every time the user makes a request
-  req.sessionOptions.maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
-  next();
-});
+app.use(currentuser);
 
 setRoutes(app);
 

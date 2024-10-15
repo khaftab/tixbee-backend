@@ -18,6 +18,14 @@ interface UserDoc extends Document {
   password: string;
   createdAt: Date; // Remove createdAt, updatedAt if the schema does not have timestamp.
   updatedAt: Date;
+  billingAddress?: {
+    name: string;
+    address: string;
+    postalCode: string;
+    city: string;
+    state: string;
+    country: string;
+  };
 }
 const userSchema = new Schema(
   {
@@ -28,6 +36,32 @@ const userSchema = new Schema(
     password: {
       type: String,
       required: true,
+    },
+    billingAddress: {
+      name: {
+        type: String,
+        required: false,
+      },
+      address: {
+        type: String,
+        required: false,
+      },
+      postalCode: {
+        type: String,
+        required: false,
+      },
+      city: {
+        type: String,
+        required: false,
+      },
+      state: {
+        type: String,
+        required: false,
+      },
+      country: {
+        type: String,
+        required: false,
+      },
     },
   },
   {

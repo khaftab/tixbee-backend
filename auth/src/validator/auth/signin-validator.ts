@@ -6,9 +6,11 @@ export default [
     .not()
     .isEmpty()
     .withMessage("Email cannot be empty")
+    .bail()
     .normalizeEmail() // means it will convert the email to lowercase
     .isEmail()
     .withMessage("Please enter a valid email")
+    .bail()
     .custom(async (email, { req }) => {
       const user = await User.findOne({ email });
 
@@ -18,11 +20,11 @@ export default [
       }
       return true;
     }),
-
   body("password")
     .not()
     .isEmpty()
     .withMessage("Password cannot be empty")
+    .bail()
     .custom(async (password, { req }) => {
       if (!req.user) {
         return true;
@@ -30,7 +32,7 @@ export default [
       const result = req.user && (await Password.compare(req.user.password, password));
 
       if (!result) {
-        return Promise.reject("Password is wrong");
+        return Promise.reject("Email or password is wrong");
       }
       return true;
     }),
