@@ -3,7 +3,7 @@ import { Express } from "express";
 
 const routes = [
   {
-    path: "/api",
+    path: "/api/payments",
     handler: payments,
   },
 ];

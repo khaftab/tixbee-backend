@@ -13,8 +13,11 @@ import { Payment } from "../models/Payment";
 import { PaymentCreatedPublisher } from "../events/publishers/payment-created-publisher";
 
 const createCharge = async (req: Request, res: Response) => {
-  const { token, orderId } = req.body;
+  const { token, orderId, billingInfo } = req.body;
+  const billingAddress = { ...billingInfo };
+  delete billingAddress.name;
   const order = await Order.findById(orderId);
+
   if (!order) {
     throw new NotFoundError();
   }
@@ -25,86 +28,102 @@ const createCharge = async (req: Request, res: Response) => {
     throw new BadRequestError("Cannot pay for a cancelled order");
   }
   // /**
-  const customer = await stripe.customers.create({
-    name: "Jenny Rosen",
-    address: {
-      line1: "510 Townsend St",
-      postal_code: "98140",
-      city: "San Francisco",
-      state: "CA",
-      country: "US",
-    },
+
+  let customer;
+  const existingCustomers = await stripe.customers.list({
+    email: req.currentUser!.email,
+    limit: 1,
   });
 
-  const charge = await stripe.charges.create({
-    currency: "inr",
-    amount: order.price * 100, // stripe expects amount in lowest currency unit.
-    source: token,
+  if (existingCustomers.data.length > 0) {
+    // Use existing customer
+    customer = existingCustomers.data[0];
+  } else {
+    // Create new customer if not found
+    customer = await stripe.customers.create({
+      email: req.currentUser!.email,
+      name: billingInfo.name,
+      address: {
+        ...billingAddress,
+      },
+    });
+  }
+
+  const paymentIntent = await stripe.paymentIntents.create({
+    customer: customer.id,
+    amount: order.price * 100,
+    currency: "usd",
+    payment_method: token,
+    confirm: true,
+    automatic_payment_methods: {
+      enabled: true,
+      allow_redirects: "never",
+    },
     description: "Charge for order",
     shipping: {
-      name: "Jenny Rosen",
+      name: billingInfo.name,
       address: {
-        line1: "510 Townsend St",
-        postal_code: "98140",
-        city: "San Francisco",
-        state: "CA",
-        country: "US",
+        ...billingAddress,
       },
     },
-  });
-
-  const payment = new Payment({
-    orderId: order.id,
-    stripeId: charge.id,
-  });
-  await payment.save();
-  new PaymentCreatedPublisher(natsWrapper.client).publish({
-    id: payment.id,
-    orderId: payment.orderId,
-    stripeId: payment.stripeId,
-  });
-
-  // */
-  res.status(201).send({ id: payment.id });
-};
-
-export { createCharge };
-
-async function testPaymentIntent() {
-  // Create a Customer
-  const customer = await stripe.customers.create({
-    name: "Tamu Ahmed",
-    address: {
-      line1: "510 Townsend St",
-      postal_code: "98140",
-      city: "San Francisco",
-      state: "CA",
-      country: "US",
+    metadata: {
+      orderId: order.id,
+      userId: req.currentUser!.id,
     },
   });
 
-  try {
-    // Step 1: Create a PaymentIntent
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: 200, // $2.00
-      currency: "usd",
-      payment_method_types: ["card"],
-      description: "Test charge for order",
-      payment_method: "pm_card_visa", // Use a test card that doesn't trigger requires_action
-      off_session: true, // Confirm the PaymentIntent without handling next actions
-      confirm: true, // Automatically confirms the payment
-      customer: customer.id,
+  if (paymentIntent.status === "requires_action") {
+    // 3D Secure authentication is required
+    return res.status(200).send({
+      requiresAction: true,
+      clientSecret: paymentIntent.client_secret,
     });
-
-    console.log("PaymentIntent created:", paymentIntent);
-
-    if (paymentIntent.status === "succeeded") {
-      console.log("Payment succeeded without further action:", paymentIntent);
-    } else {
-      console.log("Payment failed or is pending:", paymentIntent.status);
-    }
-  } catch (error) {
-    console.error("Error:", error);
-    throw error;
+  } else if (paymentIntent.status === "succeeded") {
+    // Payment is successful without 3D Secure
+    return res.status(200).send({ success: true });
+  } else {
+    // Payment failed
+    throw new BadRequestError("Payment failed");
   }
-}
+};
+
+const webhook = async (req: Request, res: Response) => {
+  const sig = req.headers["stripe-signature"];
+  let event;
+
+  try {
+    // Use the production webhook secret
+    // const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+    const webhookSecret = "whsec_5caab9b9e16f42f561fd4b8dbdece910a2ac944c168ed7a0a22cd2357ecc81f4";
+    event = stripe.webhooks.constructEvent(req.body, sig!, webhookSecret);
+  } catch (err: any) {
+    console.error(`⚠️  Webhook signature verification failed.`, err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+  // console.log(event.data.object, "event.data.object");
+
+  // Handle the event
+  if (event.type === "payment_intent.succeeded") {
+    const paymentIntent = event.data.object;
+    try {
+      const payment = new Payment({
+        orderId: paymentIntent.metadata.orderId,
+        stripeId: paymentIntent.id,
+      });
+      await payment.save();
+      new PaymentCreatedPublisher(natsWrapper.client).publish({
+        id: payment.id,
+        orderId: payment.orderId,
+        stripeId: payment.stripeId,
+      });
+      res.status(201).send({ id: payment.id });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  // Return a 200 response to acknowledge receipt of the event
+  res.send();
+};
+
+export { createCharge, webhook };

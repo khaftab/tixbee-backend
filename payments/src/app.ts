@@ -15,7 +15,7 @@ app.use(
   })
 );
 app.set("trust proxy", true);
-app.use(express.json());
+// app.use(express.json()); will cause webhooks to fail because /webhook route is expecting raw data.
 app.use(
   cookieSession({
     signed: false, // Disable encryption on cookie because JWT is already encrypted. And other services need to read the cookie as well where they might not know decryption algorithm.

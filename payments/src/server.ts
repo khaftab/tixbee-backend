@@ -28,7 +28,7 @@ const start = async () => {
     await mongoose.connect(process.env.MONGO_URI);
     console.log("Connected to MongoDB");
     app.listen(3000, () => {
-      console.log("Tickets service running on port 3000");
+      console.log("Payments service running on port 3000");
     });
   } catch (err) {
     console.error(err);
@@ -41,4 +41,5 @@ start();
 // kubectl create secret generic jwt-secret --from-literal JWT_KEY=dd37cf85ecf33cc4
 // kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.1/deploy/static/provider/cloud/deploy.yaml
 
-// kubectl create secret generic stripe-secret --from-literal STRIPE_KEY=
+// kubectl create secret generic stripe-secret --from-literal STRIPE_KEY=sk_test_.. --from-literal STRIPE_WEBHOOK_SECRET=whsec_
+// stripe listen --forward-to https://localhost/api/payments/webhook --skip-verify
