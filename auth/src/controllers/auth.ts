@@ -60,7 +60,6 @@ const signout = async (req: Request, res: Response) => {
 
 const updateUser = async (req: Request, res: Response) => {
   const user = await User.findById(req.currentUser!.id);
-  console.log("Req body", user);
 
   if (!user) throw new BadRequestError("User not found");
 
