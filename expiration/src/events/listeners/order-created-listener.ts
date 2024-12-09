@@ -5,7 +5,6 @@ import { expirationQueue } from "../../queues/expiration-queue";
 export class OrderCreatedListener extends Listener<OrderCreatedEvent> {
   subject: Subjects.OrderCreated = Subjects.OrderCreated;
   consumer_name = "expiration";
-  // Had to provode type because ts thinks possibility of ressignment of subject (or use readonly keyword).
 
   async onMessage(data: OrderCreatedEvent["data"], msg: JsMsg) {
     const delay = new Date(data.expiresAt).getTime() - new Date().getTime();

@@ -14,6 +14,7 @@ const expirationQueue = new Queue<Payload>("order-expiration", {
 import { Worker } from "bullmq";
 import { ExpirationCompletePublisher } from "../events/publishers/expiration-complete-publisher";
 import { natsWrapper } from "../nats-wrapper";
+import { logger } from "@kh-micro-srv/common";
 
 const expirationWorker = new Worker(
   "order-expiration",
@@ -31,7 +32,7 @@ const expirationWorker = new Worker(
 );
 
 expirationWorker.on("ready", () => {
-  console.log("Expiration worker is ready");
+  logger.info("Expiration worker is ready");
 });
 
 export { expirationQueue };

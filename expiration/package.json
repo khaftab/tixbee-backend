@@ -19,7 +19,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@kh-micro-srv/common": "^3.5.2",
+    "@kh-micro-srv/common": "^3.6.11",
     "bullmq": "^5.12.12",
     "nats": "^2.28.2"
   },
