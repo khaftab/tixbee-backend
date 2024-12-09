@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { User } from "../models/User";
 import jwt from "jsonwebtoken";
-import { BadRequestError } from "@kh-micro-srv/common";
+import { BadRequestError, logger } from "@kh-micro-srv/common";
 
 const currentUser = async (req: Request, res: Response) => {
   res.send({ currentUser: req.currentUser || null });
@@ -26,6 +26,7 @@ const signin = async (req: Request, res: Response) => {
     // this will be added to req object (set jwt to client) by cookie-session middleware.
     jwt: userJwt,
   };
+  logger.info("User signed in with", existingUser.email);
   res.status(200).send(existingUser);
 };
 
@@ -46,9 +47,9 @@ const signup = async (req: Request, res: Response) => {
   );
 
   req.session = {
-    // this will be added to req object (set jwt to client) by cookie-session middleware.
     jwt: userJwt,
   };
+  logger.info("User signed up with", user.email);
   res.status(201).send(user);
 };
 
