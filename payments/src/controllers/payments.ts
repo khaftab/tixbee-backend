@@ -4,8 +4,8 @@ import {
   NotAuthorizedError,
   BadRequestError,
   OrderStatus,
+  logger,
 } from "@kh-micro-srv/common";
-import mongoose from "mongoose";
 import { natsWrapper } from "../nats-wrapper";
 import { Order } from "../models/Order";
 import { stripe } from "../stripe";
@@ -93,14 +93,12 @@ const webhook = async (req: Request, res: Response) => {
 
   try {
     // Use the production webhook secret
-    // const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
-    const webhookSecret = "whsec_5caab9b9e16f42f561fd4b8dbdece910a2ac944c168ed7a0a22cd2357ecc81f4";
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
     event = stripe.webhooks.constructEvent(req.body, sig!, webhookSecret);
   } catch (err: any) {
-    console.error(`⚠️  Webhook signature verification failed.`, err.message);
+    logger.error(`⚠️  Webhook signature verification failed.`, err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
-  // console.log(event.data.object, "event.data.object");
 
   // Handle the event
   if (event.type === "payment_intent.succeeded") {
@@ -111,6 +109,11 @@ const webhook = async (req: Request, res: Response) => {
         stripeId: paymentIntent.id,
       });
       await payment.save();
+      logger.info("Payment successfull", {
+        id: payment.id,
+        orderId: payment.orderId,
+        stripeId: payment.stripeId,
+      });
       new PaymentCreatedPublisher(natsWrapper.client).publish({
         id: payment.id,
         orderId: payment.orderId,
@@ -118,7 +121,7 @@ const webhook = async (req: Request, res: Response) => {
       });
       res.status(201).send({ id: payment.id });
     } catch (error) {
-      console.log(error);
+      logger.error(error);
     }
   }
 
