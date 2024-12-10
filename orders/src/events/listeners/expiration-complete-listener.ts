@@ -6,7 +6,6 @@ import { OrderCancelledPublisher } from "../publishers/order-cancelled-publisher
 export class ExpirationCompleteListener extends Listener<ExpirationCompleteEvent> {
   subject: Subjects.ExpirationComplete = Subjects.ExpirationComplete;
   consumer_name = "orders";
-  // Had to provode type because ts thinks possibility of ressignment of subject (or use readonly keyword).
 
   async onMessage(data: ExpirationCompleteEvent["data"], msg: JsMsg) {
     const order = await Order.findById(data.orderId).populate("ticket");

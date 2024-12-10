@@ -5,8 +5,6 @@ import { Ticket } from "../../models/Ticket";
 export class TicketUpdatedListener extends Listener<TicketUpdatedEvent> {
   subject: Subjects.TicketUpdated = Subjects.TicketUpdated;
   consumer_name = "orders";
-  // Had to provode type because ts thinks possibility of ressignment of subject (or use readonly keyword).
-
   async onMessage(data: TicketUpdatedEvent["data"], msg: JsMsg) {
     const {
       id: _id,

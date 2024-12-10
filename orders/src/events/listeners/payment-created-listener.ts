@@ -1,12 +1,12 @@
 import { JsMsg } from "nats";
 import { Listener, OrderStatus, PaymentCreatedEvent, Subjects } from "@kh-micro-srv/common";
-import { Ticket } from "../../models/Ticket";
 import { Order } from "../../models/Order";
+import { TicketUnavailablePublisher } from "../publishers/ticket-unavailable-publisher";
+import { natsWrapper } from "../../nats-wrapper";
 
 export class PaymentCreatedListener extends Listener<PaymentCreatedEvent> {
   subject: Subjects.PaymentCreated = Subjects.PaymentCreated;
   consumer_name = "orders";
-  // Had to provode type because ts thinks possibility of ressignment of subject (or use readonly keyword).
 
   async onMessage(data: PaymentCreatedEvent["data"], msg: JsMsg) {
     const order = await Order.findById(data.orderId);
@@ -16,6 +16,11 @@ export class PaymentCreatedListener extends Listener<PaymentCreatedEvent> {
     order.set({ status: OrderStatus.Complete });
     await order.save();
     // After completing the order, we don't need to publish event like OrderUpdatedEvent bcs no one is updating order after being complete.
+    // queueService.removeFromQueue(order.ticket.id, order.userId);
+
+    await new TicketUnavailablePublisher(natsWrapper.client).publish({
+      ticketId: order.ticket.toString(),
+    });
     msg.ack();
   }
 }

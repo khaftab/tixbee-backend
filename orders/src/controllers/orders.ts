@@ -1,15 +1,11 @@
 import { Request, Response } from "express";
 import { Ticket } from "../models/Ticket";
 import { Order } from "../models/Order";
-import {
-  NotFoundError,
-  NotAuthorizedError,
-  OrderStatus,
-  BadRequestError,
-} from "@kh-micro-srv/common";
+import { NotFoundError, OrderStatus, BadRequestError, logger } from "@kh-micro-srv/common";
 import { natsWrapper } from "../nats-wrapper";
 import { OrderCreatedPublisher } from "../events/publishers/order-created-publisher";
 import { OrderCancelledPublisher } from "../events/publishers/order-cancelled-publisher";
+import { AddUserToQueuePublisher } from "../events/publishers/add-user-queue-publisher";
 
 const EXPIRATION_WINDOW_SECONDS = 3 * 60;
 
@@ -19,10 +15,27 @@ const createOrder = async (req: Request, res: Response) => {
   if (!ticket) {
     throw new NotFoundError();
   }
+  const existingOrder = await Order.find({
+    userId: req.currentUser!.id,
+    status: OrderStatus.Created,
+    ticket: ticket.id,
+  });
+  if (existingOrder.length) {
+    return res.status(206).send({ orderId: existingOrder[0].id });
+  }
   // Make sure that this ticket is not already reserved
   const isReserved = await ticket.isReserved();
-  if (isReserved) {
+  if (isReserved === OrderStatus.Complete) {
     throw new BadRequestError("Ticket is already reserved");
+  }
+
+  if (isReserved === OrderStatus.Created) {
+    logger.info("User added to the queue", { ticketId: ticket.id, userId: req.currentUser!.id });
+    await new AddUserToQueuePublisher(natsWrapper.client).publish({
+      ticketId: ticket.id,
+      userId: req.currentUser!.id,
+    });
+    return res.status(202).send({ ticketId: ticket.id });
   }
   // Calculate an expiration date for this order
   const expiration = new Date();
@@ -36,6 +49,7 @@ const createOrder = async (req: Request, res: Response) => {
   });
   await order.save();
   // Publish an event saying that an order was created
+  logger.info("Order created", { orderId: order.id, ticketId: ticket.id });
   try {
     await new OrderCreatedPublisher(natsWrapper.client).publish({
       id: order.id,
@@ -50,7 +64,7 @@ const createOrder = async (req: Request, res: Response) => {
       // version: order.version,
     });
   } catch (error) {
-    console.log(error);
+    logger.error(error);
   }
 
   res.status(201).send(order);
@@ -83,7 +97,7 @@ const getAllOrders = async (req: Request, res: Response) => {
   } else if (filterBy === "cancelled") {
     statusFilter = { status: "cancelled" };
   } else if (filterBy === "all") {
-    statusFilter = { status: { $in: ["created", "complete", "cancelled", "awaiting:payment"] } };
+    statusFilter = { status: { $in: ["created", "complete", "cancelled"] } };
   }
 
   const currentPage = typeof req.query.page === "string" ? parseInt(req.query.page) : 1;
@@ -112,7 +126,7 @@ const getAllOrders = async (req: Request, res: Response) => {
     { $project: { _id: 0, __v: 0, "ticket._id": 0, "ticket.__v": 0 } },
   ]);
 
-  const totalOrders = await Order.countDocuments({ userId: req.currentUser!.id });
+  const totalOrders = await Order.countDocuments({ userId: req.currentUser!.id, ...statusFilter });
 
   res.status(200).send({ orders, totalOrders });
 };
@@ -130,7 +144,6 @@ const deleteOrder = async (req: Request, res: Response) => {
   }
   order[0].status = OrderStatus.Cancelled;
   await order[0].save();
-  console.log(order[0]);
 
   await new OrderCancelledPublisher(natsWrapper.client).publish({
     id: order[0].id,
@@ -140,7 +153,7 @@ const deleteOrder = async (req: Request, res: Response) => {
     },
     // version: order[0].version,
   });
-
+  logger.info("Order cancelled", { orderId: order[0].id, ticketId: order[0].ticket.id });
   res.status(204).send(); // 204 means no content. Even if we send some content, it will not be shown in the response.
 };
 

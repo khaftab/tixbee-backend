@@ -36,7 +36,8 @@ it("returns a 400 if the ticket is already reserved", async () => {
     title: "My custom test ticket",
     price: 20,
     category: "concert",
-    imagePublicId: "123",
+    thumbnailImagePublicId: "qplx7tdxtef2wvoffghe",
+    ticketImagePublicId: "b5zol3ofgu29wpcfssab",
     description: "describe",
   });
   await ticket.save();
@@ -47,7 +48,7 @@ it("returns a 400 if the ticket is already reserved", async () => {
     ticket,
   });
   await order.save();
-  await createOrder(ticket.id).expect(400);
+  await createOrder(ticket.id).expect(202);
 });
 
 it("reserves a ticket", async () => {
@@ -57,7 +58,8 @@ it("reserves a ticket", async () => {
     title: "My custom test ticket",
     price: 20,
     category: "concert",
-    imagePublicId: "123",
+    thumbnailImagePublicId: "qplx7tdxtef2wvoffghe",
+    ticketImagePublicId: "b5zol3ofgu29wpcfssab",
     description: "describe",
   });
   await ticket.save();
@@ -72,7 +74,8 @@ it("emits an order created event", async () => {
     title: "My custom test ticket",
     price: 20,
     category: "concert",
-    imagePublicId: "123",
+    thumbnailImagePublicId: "qplx7tdxtef2wvoffghe",
+    ticketImagePublicId: "b5zol3ofgu29wpcfssab",
     description: "describe",
   });
   await ticket.save();

@@ -18,7 +18,8 @@ interface TicketDoc extends Document {
   description: string;
   thumbnailImagePublicId: string;
   ticketImagePublicId: string;
-  isReserved(): Promise<boolean>;
+  // isReserved(): Promise<boolean>;
+  isReserved(): Promise<string>;
   version: number; // optimistic concurrency control will only be in action, when you try to update the document using save() method. It will not work with findOneAndUpdate() and other method that does not use save() method. Hence, it also does not increment the version number.
 }
 
@@ -78,19 +79,18 @@ ticketSchema.methods.isReserved = async function () {
       $in: [
         // get orders with these statuses. (Excluding Cancelled)
         OrderStatus.Created,
-        OrderStatus.AwaitingPayment,
         OrderStatus.Complete,
       ],
     },
   });
-  return !!existingOrder;
+  // return !!existingOrder;
+  return existingOrder ? existingOrder.status : "not_reserved";
 };
 
 const MongoTicket = model<TicketDoc>("Ticket", ticketSchema);
 
 class Ticket extends MongoTicket {
   constructor(attrs: TicketAttrs) {
-    // This will prevent creating new User with invalid key value.
     super(attrs);
   }
 }

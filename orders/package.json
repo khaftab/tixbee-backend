@@ -19,14 +19,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@kh-micro-srv/common": "^3.6.4",
+    "@kh-micro-srv/common": "^3.6.11",
     "cookie-session": "^2.1.0",
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "express-async-errors": "^3.1.1",
     "express-validator": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.5.1"
+    "mongoose": "^8.5.1",
+    "nats": "^2.28.2"
   },
   "devDependencies": {
     "@types/cookie-session": "^2.0.49",

@@ -1,6 +1,6 @@
 import request from "supertest";
 import app from "../../app";
-import { getCookie, createOrder, createOrderWithCookie } from "../../test/helper";
+import { getCookie, createOrderWithCookie } from "../../test/helper";
 import mongoose from "mongoose";
 import { Order, OrderStatus } from "../../models/Order";
 import { Ticket } from "../../models/Ticket";
@@ -21,7 +21,8 @@ it("fetches orders for a particular user", async () => {
     title: "Concert 1",
     price: 10,
     category: "concert",
-    imagePublicId: "123",
+    thumbnailImagePublicId: "qplx7tdxtef2wvoffghe",
+    ticketImagePublicId: "b5zol3ofgu29wpcfssab",
     description: "describe",
   });
   await ticket1.save();
@@ -30,7 +31,8 @@ it("fetches orders for a particular user", async () => {
     title: "Concert 2",
     price: 20,
     category: "concert",
-    imagePublicId: "123",
+    thumbnailImagePublicId: "qplx7tdxtef2wvoffghe",
+    ticketImagePublicId: "b5zol3ofgu29wpcfssab",
     description: "describe",
   });
   await ticket2.save();
@@ -39,7 +41,8 @@ it("fetches orders for a particular user", async () => {
     title: "Concert 3",
     price: 30,
     category: "concert",
-    imagePublicId: "123",
+    thumbnailImagePublicId: "qplx7tdxtef2wvoffghe",
+    ticketImagePublicId: "b5zol3ofgu29wpcfssab",
     description: "describe",
   });
   await ticket3.save();
@@ -56,12 +59,12 @@ it("fetches orders for a particular user", async () => {
 
   // Make request to get orders for User #2
   const response = await request(app).get("/api/orders").set("Cookie", user2).send().expect(200);
-  // Make sure we only got the orders for User #2
-  expect(response.body.length).toEqual(2);
-  expect(response.body[0].id).toEqual(orderOne.id);
-  expect(response.body[1].id).toEqual(orderTwo.id);
-  expect(response.body[0].ticket.id).toEqual(ticket2.id);
-  expect(response.body[1].ticket.id).toEqual(ticket3.id);
+
+  expect(response.body.totalOrders).toEqual(2);
+  expect(response.body.orders[1].id).toEqual(orderOne.id);
+  expect(response.body.orders[0].id).toEqual(orderTwo.id);
+  expect(response.body.orders[1].ticket.id).toEqual(ticket2.id);
+  expect(response.body.orders[0].ticket.id).toEqual(ticket3.id);
 });
 
 it("it fetches orders for a particular user", async () => {
@@ -70,7 +73,8 @@ it("it fetches orders for a particular user", async () => {
     title: "Concert play",
     price: 10,
     category: "concert",
-    imagePublicId: "123",
+    thumbnailImagePublicId: "qplx7tdxtef2wvoffghe",
+    ticketImagePublicId: "b5zol3ofgu29wpcfssab",
     description: "describe",
   });
   await ticket.save();
@@ -97,7 +101,8 @@ it("returns 404 if order does not belong to the user", async () => {
     title: "Concert play",
     price: 10,
     category: "concert",
-    imagePublicId: "123",
+    thumbnailImagePublicId: "qplx7tdxtef2wvoffghe",
+    ticketImagePublicId: "b5zol3ofgu29wpcfssab",
     description: "describe",
   });
   await ticket.save();
@@ -118,7 +123,8 @@ it("returns 404 if order does not belong to the user for cancellation", async ()
     title: "Concert play",
     price: 10,
     category: "concert",
-    imagePublicId: "123",
+    thumbnailImagePublicId: "qplx7tdxtef2wvoffghe",
+    ticketImagePublicId: "b5zol3ofgu29wpcfssab",
     description: "describe",
   });
   await ticket.save();
@@ -134,7 +140,8 @@ it("marks an order as cancelled", async () => {
     title: "Concert play",
     price: 10,
     category: "concert",
-    imagePublicId: "123",
+    thumbnailImagePublicId: "qplx7tdxtef2wvoffghe",
+    ticketImagePublicId: "b5zol3ofgu29wpcfssab",
     description: "describe",
   });
   await ticket.save();
@@ -154,7 +161,8 @@ it("emits an order cancelled event", async () => {
     title: "Concert play",
     price: 10,
     category: "concert",
-    imagePublicId: "123",
+    thumbnailImagePublicId: "qplx7tdxtef2wvoffghe",
+    ticketImagePublicId: "b5zol3ofgu29wpcfssab",
     description: "describe",
   });
   await ticket.save();

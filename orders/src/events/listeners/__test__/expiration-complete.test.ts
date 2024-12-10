@@ -13,7 +13,8 @@ const setup = async () => {
     title: "concert",
     price: 20,
     category: "concert",
-    imagePublicId: "123",
+    thumbnailImagePublicId: "qplx7tdxtef2wvoffghe",
+    ticketImagePublicId: "b5zol3ofgu29wpcfssab",
     description: "describe",
   });
   await ticket.save();

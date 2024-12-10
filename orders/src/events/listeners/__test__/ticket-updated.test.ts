@@ -11,7 +11,8 @@ const updateSetup = async () => {
     title: "concert",
     price: 20,
     category: "concert",
-    imagePublicId: "123",
+    thumbnailImagePublicId: "qplx7tdxtef2wvoffghe",
+    ticketImagePublicId: "b5zol3ofgu29wpcfssab",
     description: "describe",
   });
   await ticket.save();
@@ -20,9 +21,11 @@ const updateSetup = async () => {
     title: "new concert",
     price: 209,
     category: "concert",
-    imagePublicId: "123",
+    thumbnailImagePublicId: "qplx7tdxtef2wvoffghe",
+    ticketImagePublicId: "b5zol3ofgu29wpcfssab",
     description: "describe",
     userId: new mongoose.Types.ObjectId().toHexString(),
+    orderId: new mongoose.Types.ObjectId().toHexString(),
     version: ticket.version + 1,
   };
   // @ts-ignore
@@ -36,7 +39,6 @@ it("updates a ticket", async () => {
   const { listener, data, msg, ticket } = await updateSetup();
   await listener.onMessage(data, msg);
   const updatedTicket = await Ticket.findById(data.id);
-  console.log(ticket);
   expect(updatedTicket).toBeDefined();
   expect(updatedTicket!.title).toEqual(data.title);
   expect(updatedTicket!.price).toEqual(data.price);

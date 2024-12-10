@@ -12,9 +12,11 @@ const setup = async () => {
     title: "concert",
     price: 20,
     category: "concert",
-    imagePublicId: "123",
+    thumbnailImagePublicId: "qplx7tdxtef2wvoffghe",
+    ticketImagePublicId: "b5zol3ofgu29wpcfssab",
     description: "describe",
     userId: new mongoose.Types.ObjectId().toHexString(),
+    orderId: null,
     version: 0,
   };
   // @ts-ignore
@@ -28,7 +30,6 @@ it("creates and saves a ticket", async () => {
   const { listener, data, msg } = await setup();
   await listener.onMessage(data, msg);
   const ticket = await Ticket.findById(data.id);
-  console.log(ticket);
 
   expect(ticket).toBeDefined();
   expect(ticket!.title).toEqual(data.title);
