@@ -1,3 +1,4 @@
+import { logger } from "@kh-micro-srv/common";
 import { connect, NatsConnection } from "nats";
 class NatsWrapper {
   private nc?: NatsConnection;
@@ -13,19 +14,19 @@ class NatsWrapper {
     this.nc = await connect({
       servers: url,
     });
-    console.log("Connected to NATS");
+    logger.info("Connected to NATS");
   }
 
   async shutdown() {
-    console.log("Shutting down gracefully...");
+    logger.info("Shutting down gracefully...");
     try {
       await this.client.drain(); // Ensure all messages are processed
-      console.log("All messages processed.");
+      logger.info("All messages processed.");
     } catch (err) {
-      console.error("Error during draining:", err);
+      logger.error("Error during draining:", err);
     } finally {
       await this.client.close(); // Close the NATS connection
-      console.log("NATS connection closed.");
+      logger.info("NATS connection closed.");
       process.exit(0); // Exit the process
     }
   }

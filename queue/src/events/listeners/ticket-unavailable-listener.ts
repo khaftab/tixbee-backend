@@ -1,22 +1,19 @@
 import { JsMsg } from "nats";
-import { Listener, OrderStatus, PaymentCreatedEvent, Subjects } from "@kh-micro-srv/common";
+import { Listener, logger, Subjects, TicketUnavailableEvent } from "@kh-micro-srv/common";
+import { queueService } from "../../queue-management";
+import { emitEventToAll } from "../../socket";
 
-interface TicketUnavailableEvent {
-  subject: "ticket:unavailable";
-  data: {
-    ticketId: string;
-    queueLength: number;
-  };
-}
-
-export class QueueUpdateListener extends Listener<TicketUnavailableEvent> {
-  // @ts-ignore
-  subject = "ticket:unavailable";
+export class TicketUnavailableListener extends Listener<TicketUnavailableEvent> {
+  subject: Subjects.TicketUnavailable = Subjects.TicketUnavailable;
   consumer_name = "queue";
-  // Had to provode type because ts thinks possibility of ressignment of subject (or use readonly keyword).
 
   async onMessage(data: TicketUnavailableEvent["data"], msg: JsMsg) {
-    console.log("TicketUnavailable listner: ", data);
-    msg.ack();
+    try {
+      await queueService.deleteKey(data.ticketId);
+      await emitEventToAll("ticket-unavilable", data.ticketId);
+      msg.ack();
+    } catch (error) {
+      logger.error(error);
+    }
   }
 }
