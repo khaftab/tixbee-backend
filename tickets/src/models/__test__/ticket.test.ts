@@ -10,7 +10,8 @@ it("implements optimistic concurrency control", async () => {
     userId: "123",
     category: "concert",
     description: "describe",
-    imagePublicId: "123",
+    thumbnailImagePublicId: "qplx7tdxtef2wvoffghe",
+    ticketImagePublicId: "b5zol3ofgu29wpcfssab",
   });
 
   // Save the ticket to the database
@@ -47,7 +48,8 @@ it("increments the version number on multiple saves", async () => {
     userId: "123",
     category: "concert",
     description: "describe",
-    imagePublicId: "123",
+    thumbnailImagePublicId: "qplx7tdxtef2wvoffghe",
+    ticketImagePublicId: "b5zol3ofgu29wpcfssab",
   });
 
   await ticket.save();

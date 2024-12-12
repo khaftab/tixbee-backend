@@ -15,7 +15,7 @@ const router = express.Router();
 router.get("/tickets/category/:category", getTicketsByCategory);
 router.post("/tickets", requireAuth, ticketValidator, validateRequest, createTicket);
 router.get("/tickets/:id", getTicketById);
-router.put("/tickets/:id", requireAuth, updateTicket);
+router.put("/tickets/:id", requireAuth, ticketValidator, validateRequest, updateTicket);
 router.delete("/tickets/:id", requireAuth, deleteTicket);
 // router.get("/signout", signout);
 

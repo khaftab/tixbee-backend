@@ -14,7 +14,8 @@ it("returns a 404 if the provided id does not exist", async () => {
       title: "test",
       price: 10,
       category: "concert",
-      imagePublicId: "123",
+      thumbnailImagePublicId: "qplx7tdxtef2wvoffghe",
+      ticketImagePublicId: "b5zol3ofgu29wpcfssab",
       description: "describe",
     })
     .expect(404);
@@ -34,7 +35,8 @@ it("returns a 401 if the user does not own the ticket", async () => {
       title: "test",
       price: 10,
       category: "concert",
-      imagePublicId: "123",
+      thumbnailImagePublicId: "qplx7tdxtef2wvoffghe",
+      ticketImagePublicId: "b5zol3ofgu29wpcfssab",
       description: "describe",
     })
     .expect(401);
@@ -82,7 +84,8 @@ it("updates the ticket provided valid inputs", async () => {
       title: "test",
       price: 10,
       category: "concert",
-      imagePublicId: "123",
+      thumbnailImagePublicId: "qplx7tdxtef2wvoffghe",
+      ticketImagePublicId: "b5zol3ofgu29wpcfssab",
       description: "describe",
     })
     .expect(201);
@@ -93,15 +96,23 @@ it("updates the ticket provided valid inputs", async () => {
       title: "updated title",
       price: 100,
       category: "concert",
-      imagePublicId: "321",
+      thumbnailImagePublicId: "1234",
+      ticketImagePublicId: "4321",
       description: "updated describe",
     })
     .expect(200);
-  const ticketResponse = await request(app).get(`/api/tickets/${response.body.id}`).send();
+  const ticketResponse = await request(app)
+    .get(`/api/tickets/${response.body.id}`)
+    .set("Cookie", cookie);
+
+  const ticketRes = await request(app).get(`/api/tickets/${response.body.id}`);
+  // without the ticket creating user, it will return empty string on tikcet image.
+  expect(ticketRes.body.ticketImagePublicId).toEqual("");
   expect(ticketResponse.body.title).toEqual("updated title");
   expect(ticketResponse.body.price).toEqual(100);
   expect(ticketResponse.body.category).toEqual("concert");
-  expect(ticketResponse.body.imagePublicId).toEqual("321");
+  expect(ticketResponse.body.thumbnailImagePublicId).toEqual("1234");
+  expect(ticketResponse.body.ticketImagePublicId).toEqual("4321");
   expect(ticketResponse.body.description).toEqual("updated describe");
 });
 
@@ -114,7 +125,8 @@ it("publishes an event after updating a ticket", async () => {
       title: "test",
       price: 10,
       category: "concert",
-      imagePublicId: "123",
+      thumbnailImagePublicId: "qplx7tdxtef2wvoffghe",
+      ticketImagePublicId: "b5zol3ofgu29wpcfssab",
       description: "describe",
     })
     .expect(201);
@@ -125,7 +137,8 @@ it("publishes an event after updating a ticket", async () => {
       title: "updated title",
       price: 100,
       category: "concert",
-      imagePublicId: "321",
+      thumbnailImagePublicId: "qplx7tdxtef2wvoffghe",
+      ticketImagePublicId: "b5zol3ofgu29wpcfssab",
       description: "updated describe",
     })
     .expect(200);
@@ -141,7 +154,8 @@ it("rejects updates if the ticket is reserved", async () => {
       title: "test",
       price: 10,
       category: "concert",
-      imagePublicId: "123",
+      thumbnailImagePublicId: "qplx7tdxtef2wvoffghe",
+      ticketImagePublicId: "b5zol3ofgu29wpcfssab",
       description: "describe",
     })
     .expect(201);
@@ -155,7 +169,8 @@ it("rejects updates if the ticket is reserved", async () => {
       title: "updated title",
       price: 100,
       category: "concert",
-      imagePublicId: "321",
+      thumbnailImagePublicId: "qplx7tdxtef2wvoffghe",
+      ticketImagePublicId: "b5zol3ofgu29wpcfssab",
       description: "updated describe",
     })
     .expect(400);

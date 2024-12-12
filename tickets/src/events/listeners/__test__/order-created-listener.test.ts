@@ -12,7 +12,8 @@ const setup = async () => {
     price: 20,
     userId: new mongoose.Types.ObjectId().toHexString(),
     category: "concert",
-    imagePublicId: "123",
+    thumbnailImagePublicId: "sf23opsenxoss",
+    ticketImagePublicId: "wtopenvSvso322",
     description: "describe",
   });
   await ticket.save();

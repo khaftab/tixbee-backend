@@ -8,7 +8,8 @@ it("publish an event when a ticket is created", async () => {
     title: "test",
     price: 10,
     category: "concert",
-    imagePublicId: "123",
+    thumbnailImagePublicId: "qplx7tdxtef2wvoffghe",
+    ticketImagePublicId: "b5zol3ofgu29wpcfssab",
     description: "describe",
   });
   expect(response.status).toEqual(201);

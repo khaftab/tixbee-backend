@@ -4,6 +4,7 @@ import { natsWrapper } from "./nats-wrapper";
 import { OrderCreatedListener } from "./events/listeners/order-created-listener";
 import { OrderCancelledListener } from "./events/listeners/order-cancelled-listener";
 import { PaymentCreatedListener } from "./events/listeners/payment-created-listener";
+import { logger } from "@kh-micro-srv/common";
 
 const start = async () => {
   if (!process.env.JWT_KEY) {
@@ -18,7 +19,7 @@ const start = async () => {
   try {
     await natsWrapper.connect(process.env.NATS_URL);
     natsWrapper.client.closed().then(() => {
-      console.log("NATS connection closed.");
+      logger.info("NATS connection closed.");
       process.exit(0); // will exit the node server when nats connection is closed.
     });
     process.on("SIGINT", natsWrapper.shutdown);
@@ -29,17 +30,13 @@ const start = async () => {
     new PaymentCreatedListener(natsWrapper.client).listen();
 
     await mongoose.connect(process.env.MONGO_URI);
-    console.log("Connected to MongoDB");
+    logger.info("Connected to MongoDB");
     app.listen(3000, () => {
-      console.log("Tickets service running on port 3000");
+      logger.info("Tickets service running on port 3000");
     });
   } catch (err) {
-    console.error(err);
+    logger.error(err);
   }
 };
 
 start();
-
-// We are setting jwt secret key in k8s secret objects. We don't list them in config file rather directly paste them in the cluster. So, that we don't expose the key in config files.
-// kubectl create secret generic jwt-secret --from-literal JWT_KEY=dd37cf85ecf33cc4
-// kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.1/deploy/static/provider/cloud/deploy.yaml

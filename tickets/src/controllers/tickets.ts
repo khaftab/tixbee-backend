@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { Ticket, ticketCategory } from "../models/Ticket";
-import { NotFoundError, NotAuthorizedError, BadRequestError } from "@kh-micro-srv/common";
-import mongoose from "mongoose";
+import { NotFoundError, NotAuthorizedError, BadRequestError, logger } from "@kh-micro-srv/common";
 import { TicketCreatedPublisher } from "../events/publishers/ticket-created-publisher";
 import { natsWrapper } from "../nats-wrapper";
 import { TicketUpdatePublisher } from "../events/publishers/ticket-update-publisher";
@@ -13,7 +12,7 @@ const createTicket = async (req: Request, res: Response) => {
   const ticket = new Ticket({
     title,
     price,
-    userId: req.currentUser!.id, // we are sure that currentUser middleware will run before this middleware. And it is behind the requireAuth middleware.
+    userId: req.currentUser!.id,
     category,
     thumbnailImagePublicId,
     ticketImagePublicId,
@@ -32,6 +31,7 @@ const createTicket = async (req: Request, res: Response) => {
     version: ticket.version,
     orderId: null,
   }); // it is better to use ticket.title rather than req.body.title. Because we might perform some pre-save hooks on the ticket model that could change the value.
+  logger.info("Ticket created", { userId: req.currentUser!.id, ticketId: ticket.id });
   res.status(201).send(ticket);
 };
 
@@ -42,7 +42,7 @@ const getTicketById = async (req: Request, res: Response) => {
     throw new NotFoundError();
   }
   if (ticket.userId !== (req.currentUser && req.currentUser.id)) {
-    ticket.ticketImagePublicId = "";
+    ticket.ticketImagePublicId = ""; // hide the ticket image if the user is not the owner of the ticket
   }
   res.status(200).send(ticket);
 };
@@ -99,8 +99,6 @@ const getTicketsByCategory = async (req: Request, res: Response) => {
 };
 
 const updateTicket = async (req: Request, res: Response) => {
-  console.log(req.body, "body");
-
   const ticket = await Ticket.findById(req.params.id);
   if (!ticket) {
     throw new NotFoundError();

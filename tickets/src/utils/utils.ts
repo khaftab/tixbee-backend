@@ -1,12 +1,13 @@
+import { logger } from "@kh-micro-srv/common";
 import { natsWrapper } from "../nats-wrapper";
 
 export const handleShutdown = async () => {
   try {
-    await natsWrapper.shutdown(); // Wait for shutdown to complete
-    console.log("NATS shutdown completed.");
+    await natsWrapper.shutdown();
+    logger.info("NATS shutdown completed.");
   } catch (error) {
-    console.error("Error during NATS shutdown:", error);
+    logger.error("Error during NATS shutdown:", error);
   } finally {
-    process.exit(0); // Exit the process after shutdown
+    process.exit(0);
   }
 };

@@ -5,11 +5,8 @@ import { Ticket } from "../../models/Ticket";
 export class PaymentCreatedListener extends Listener<PaymentCreatedEvent> {
   subject: Subjects.PaymentCreated = Subjects.PaymentCreated;
   consumer_name = "tickets";
-  // Had to provode type because ts thinks possibility of ressignment of subject (or use readonly keyword).
 
   async onMessage(data: PaymentCreatedEvent["data"], msg: JsMsg) {
-    console.log("hellow buddydy");
-
     const ticket = await Ticket.findOne({ orderId: data.orderId });
     if (!ticket) {
       throw new Error("Ticket not found");

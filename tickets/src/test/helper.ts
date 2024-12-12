@@ -21,7 +21,8 @@ export const createTicket = (
   title?: string,
   price?: number,
   category?: string,
-  imagePublicId?: string,
+  thumbnailImagePublicId?: string,
+  ticketImagePublicId?: string,
   description?: string
 ) => {
   return request(app)
@@ -31,7 +32,8 @@ export const createTicket = (
       title,
       price,
       category: category || "concert",
-      imagePublicId: imagePublicId || "123",
-      description: description || "test",
+      thumbnailImagePublicId: thumbnailImagePublicId || "qplx7tdxtef2wvoffghe",
+      ticketImagePublicId: ticketImagePublicId || "b5zol3ofgu29wpcfssab",
+      description: description || "This is a description",
     });
 };
