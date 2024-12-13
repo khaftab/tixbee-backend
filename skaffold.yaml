@@ -16,14 +16,6 @@ build:
         manual: # mnaual will not build the image if the source files change. It will only sync the files. Ouiside of the sync block, the image will be built if the source files change. i.e. pakcage.json, tsconfig.json, etc.
           - src: "src/**/*.ts"
             dest: .
-    # - image: khaftab/client
-    #   context: client
-    #   docker:
-    #     dockerfile: Dockerfile
-    #   sync:
-    #     manual:
-    #       - src: "src/**/*.tsx"
-    #         dest: .
     - image: khaftab/tickets
       context: tickets
       docker:
@@ -56,24 +48,11 @@ build:
         manual:
           - src: "src/**/*.ts"
             dest: .
-# Explanation of terms:
-# apiVersion: Specifies the version of the Skaffold API being used.
-# kind: Defines the type of the configuration object (Config in this case).
-# metadata: Provides additional information about the configuration.
-#   name: A name for the Skaffold configuration.
-#   namespace: The Kubernetes namespace for the Skaffold configuration.
-# deploy: Configuration for deploying the application.
-#   kubectl: Uses kubectl to manage Kubernetes manifests.
-#     manifests: Specifies the path to Kubernetes manifest files.
-# build: Configuration for building Docker images.
-#   local: Specifies local build settings.
-#     push: Determines if the built image should be pushed to a registry (false means it won't be pushed).
-#   artifacts: Defines the build artifacts (Docker images).
-#     image: Name of the Docker image to build.
-#     context: Directory containing the Docker context.
-#     docker: Docker-specific build settings.
-#       dockerfile: Path to the Dockerfile used for building the image.
-#     sync: Defines file synchronization settings for live code reloading.
-#       manual: Specifies manual synchronization rules.
-#         src: Source files to be synchronized.
-#         dest: Destination path in the container.
+    - image: khaftab/queue
+      context: queue
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "src/**/*.ts"
+            dest: .

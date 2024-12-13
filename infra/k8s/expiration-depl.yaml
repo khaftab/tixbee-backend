@@ -22,3 +22,10 @@ spec:
               value: expiration-redis-srv
             - name: REDIS_PORT
               value: "6379"
+            - name: TIXBEE_SOURCE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: logtail-secret
+                  key: TIXBEE_SOURCE_TOKEN
+            - name: SERVICE_NAME
+              value: expiration

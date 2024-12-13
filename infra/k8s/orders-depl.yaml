@@ -25,6 +25,13 @@ spec:
                 secretKeyRef:
                   name: jwt-secret
                   key: JWT_KEY
+            - name: TIXBEE_SOURCE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: logtail-secret
+                  key: TIXBEE_SOURCE_TOKEN
+            - name: SERVICE_NAME
+              value: orders
 ---
 apiVersion: v1
 kind: Service

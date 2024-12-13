@@ -1,23 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: auth-depl
+  name: queue-depl
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: auth
+      app: queue
   template:
     metadata:
       labels:
-        app: auth
+        app: queue
     spec:
       containers:
-        - name: auth
-          image: khaftab/auth
+        - name: queue
+          image: khaftab/queue
           env:
-            - name: MONGO_URI
-              value: mongodb://auth-mongo-srv:27017/auth
+            - name: NATS_URL
+              value: http://nats-srv:4222
+            - name: ORIGIN_URL
+              value: http://localhost:5173
             - name: JWT_KEY
               valueFrom:
                 secretKeyRef:
@@ -29,18 +31,18 @@ spec:
                   name: logtail-secret
                   key: TIXBEE_SOURCE_TOKEN
             - name: SERVICE_NAME
-              value: auth
+              value: queue
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: auth-srv
+  name: queue-srv
 spec:
   type: ClusterIP
   selector:
-    app: auth
+    app: queue
   ports:
-    - name: auth
+    - name: queue
       protocol: TCP
       port: 3000
       targetPort: 3000

@@ -23,7 +23,7 @@ class NatsWrapper {
       await this.client.drain(); // Ensure all messages are processed
       logger.info("All messages processed.");
     } catch (err) {
-      console.error("Error during draining:", err);
+      logger.error("Error during draining:", err);
     } finally {
       await this.client.close(); // Close the NATS connection
       logger.info("NATS connection closed.");

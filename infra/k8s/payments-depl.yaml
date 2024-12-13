@@ -20,6 +20,8 @@ spec:
               value: http://nats-srv:4222
             - name: MONGO_URI
               value: mongodb://payments-mongo-srv:27017/payments
+            - name: SERVICE_NAME
+              value: payments
             - name: JWT_KEY
               valueFrom:
                 secretKeyRef:
@@ -30,6 +32,16 @@ spec:
                 secretKeyRef:
                   name: stripe-secret
                   key: STRIPE_KEY
+            - name: STRIPE_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: stripe-secret
+                  key: STRIPE_WEBHOOK_SECRET
+            - name: TIXBEE_SOURCE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: logtail-secret
+                  key: TIXBEE_SOURCE_TOKEN
 ---
 apiVersion: v1
 kind: Service

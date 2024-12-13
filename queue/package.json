@@ -16,7 +16,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@kh-micro-srv/common": "^3.6.11",
+    "@kh-micro-srv/common": "^3.6.12",
     "@logtail/node": "^0.5.2",
     "@logtail/winston": "^0.5.2",
     "chalk": "^4.1.2",
