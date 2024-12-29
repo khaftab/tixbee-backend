@@ -8,7 +8,14 @@ import { PaymentCreatedListener } from "./events/listeners/payment-created-liste
 import { checkEnvVariables, logger } from "@kh-micro-srv/common";
 
 const start = async () => {
-  checkEnvVariables(["JWT_KEY", "MONGO_URI", "NATS_URL"]);
+  checkEnvVariables([
+    "JWT_KEY",
+    "MONGO_URI",
+    "NATS_URL",
+    "TIXBEE_SOURCE_TOKEN",
+    "SERVICE_NAME",
+    "ORIGIN_URL",
+  ]);
 
   try {
     await natsWrapper.connect(process.env.NATS_URL!);

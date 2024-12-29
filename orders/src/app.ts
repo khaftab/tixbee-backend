@@ -9,7 +9,7 @@ var cors = require("cors");
 const app = express();
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: JSON.parse(process.env.ORIGIN_URL || "[]"),
     credentials: true,
   })
 );

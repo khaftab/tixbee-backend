@@ -9,18 +9,6 @@ export const natsWrapper = {
     jetstream: () => {
       return { publish: publishMock };
     },
-
-    // client: {
-    //   jetstream: () => {
-    //     return {
-    //       publish: jest.fn().mockImplementation((subject: string, data: string) => {
-    //         return new Promise<object>((resolve, reject) => {
-    //           console.log("I am getting called");
-    //           resolve({ data: "hak" });
-    //         });
-    //       }),
-    //     };
-    //   },
     jetstreamManager: () => {
       return new Promise<object>((resolve, reject) => {
         resolve({
