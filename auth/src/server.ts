@@ -3,7 +3,7 @@ import app from "./app";
 import { checkEnvVariables, logger } from "@kh-micro-srv/common";
 
 const start = async () => {
-  checkEnvVariables(["JWT_KEY", "MONGO_URI"]);
+  checkEnvVariables(["JWT_KEY", "MONGO_URI", "TIXBEE_SOURCE_TOKEN", "SERVICE_NAME", "ORIGIN_URL"]);
   try {
     await mongoose.connect(process.env.MONGO_URI!);
     logger.info("Connected to MongoDB");

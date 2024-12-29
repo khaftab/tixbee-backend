@@ -9,10 +9,13 @@ var cors = require("cors");
 const app = express();
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: JSON.parse(process.env.ORIGIN_URL || "[]"),
+    // origin: "http://localhost:5173",
     credentials: true, // This is to allow cookies to be sent from browser to server.
   })
 );
+// CORS is not required thoughout the app except in the queue service (Establish socket connection from browser). Because, all of the api calls are made from the frontend server side code not from the browser. So, we can remove the cors from all the services except the queue service.
+// However, in future, if we need to make api calls from the browser, so, CORS will be required. So, we can keep it in all the services.
 app.set("trust proxy", true);
 app.use(express.json());
 app.use(
