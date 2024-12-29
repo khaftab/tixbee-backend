@@ -22,6 +22,11 @@ spec:
               value: mongodb://payments-mongo-srv:27017/payments
             - name: SERVICE_NAME
               value: payments
+            - name: ORIGIN_URL
+              valueFrom:
+                secretKeyRef:
+                  name: origin-url
+                  key: ORIGIN_URL
             - name: JWT_KEY
               valueFrom:
                 secretKeyRef:

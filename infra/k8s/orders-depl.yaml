@@ -20,6 +20,11 @@ spec:
               value: http://nats-srv:4222
             - name: MONGO_URI
               value: mongodb://orders-mongo-srv:27017/orders
+            - name: ORIGIN_URL
+              valueFrom:
+                secretKeyRef:
+                  name: origin-url
+                  key: ORIGIN_URL
             - name: JWT_KEY
               valueFrom:
                 secretKeyRef:

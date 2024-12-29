@@ -19,7 +19,10 @@ spec:
             - name: NATS_URL
               value: http://nats-srv:4222
             - name: ORIGIN_URL
-              value: http://localhost:5173
+              valueFrom:
+                secretKeyRef:
+                  name: origin-url
+                  key: ORIGIN_URL
             - name: JWT_KEY
               valueFrom:
                 secretKeyRef:
