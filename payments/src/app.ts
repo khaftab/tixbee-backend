@@ -10,7 +10,7 @@ const app = express();
 // enable cors
 app.use(
   cors({
-    origin: ["https://localhost:3200", "http://localhost:5173"],
+    origin: JSON.parse(process.env.ORIGIN_URL || "[]"),
     credentials: true,
   })
 );

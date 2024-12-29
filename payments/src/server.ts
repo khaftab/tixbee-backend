@@ -14,6 +14,7 @@ const start = async () => {
     "STRIPE_WEBHOOK_SECRET",
     "STRIPE_KEY",
     "TIXBEE_SOURCE_TOKEN",
+    "ORIGIN_URL",
   ]);
   try {
     await natsWrapper.connect(process.env.NATS_URL!);

@@ -27,7 +27,12 @@ const createCharge = async (req: Request, res: Response) => {
   if (order.status === OrderStatus.Cancelled) {
     throw new BadRequestError("Cannot pay for a cancelled order");
   }
-  // /**
+
+  const paymentExists = await Payment.findOne({ orderId: order.toJSON().id.toString() });
+  // toJSON() will replace _id to id.
+  if (paymentExists) {
+    throw new BadRequestError("Order has already been paid for");
+  }
 
   let customer;
   const existingCustomers = await stripe.customers.list({
@@ -90,7 +95,6 @@ const createCharge = async (req: Request, res: Response) => {
 const webhook = async (req: Request, res: Response) => {
   const sig = req.headers["stripe-signature"];
   let event;
-
   try {
     // Use the production webhook secret
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -109,11 +113,6 @@ const webhook = async (req: Request, res: Response) => {
         stripeId: paymentIntent.id,
       });
       await payment.save();
-      logger.info("Payment successfull", {
-        id: payment.id,
-        orderId: payment.orderId,
-        stripeId: payment.stripeId,
-      });
       new PaymentCreatedPublisher(natsWrapper.client).publish({
         id: payment.id,
         orderId: payment.orderId,
