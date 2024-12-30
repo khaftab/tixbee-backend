@@ -20,14 +20,14 @@ class NatsWrapper {
   async shutdown() {
     logger.info("Shutting down gracefully...");
     try {
-      await this.client.drain(); // Ensure all messages are processed
+      await this.client.drain();
       logger.info("All messages processed.");
     } catch (err) {
       logger.error("Error during draining:", err);
     } finally {
-      await this.client.close(); // Close the NATS connection
+      await this.client.close();
       logger.warn("NATS connection closed.");
-      process.exit(0); // Exit the process
+      process.exit(0);
     }
   }
 }
