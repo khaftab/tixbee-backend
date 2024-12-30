@@ -12,6 +12,7 @@ build:
       context: auth
       docker:
         dockerfile: Dockerfile
+        target: development
       sync:
         manual: # mnaual will not build the image if the source files change. It will only sync the files. Ouiside of the sync block, the image will be built if the source files change. i.e. pakcage.json, tsconfig.json, etc.
           - src: "src/**/*.ts"
@@ -20,6 +21,7 @@ build:
       context: tickets
       docker:
         dockerfile: Dockerfile
+        target: development
       sync:
         manual:
           - src: "src/**/*.ts"
@@ -28,6 +30,7 @@ build:
       context: orders
       docker:
         dockerfile: Dockerfile
+        target: development
       sync:
         manual:
           - src: "src/**/*.ts"
@@ -36,6 +39,7 @@ build:
       context: expiration
       docker:
         dockerfile: Dockerfile
+        target: development
       sync:
         manual:
           - src: "src/**/*.ts"
@@ -44,6 +48,7 @@ build:
       context: payments
       docker:
         dockerfile: Dockerfile
+        target: development
       sync:
         manual:
           - src: "src/**/*.ts"
@@ -52,6 +57,7 @@ build:
       context: queue
       docker:
         dockerfile: Dockerfile
+        target: development
       sync:
         manual:
           - src: "src/**/*.ts"
