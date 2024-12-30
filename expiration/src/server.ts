@@ -15,7 +15,7 @@ const start = async () => {
     await natsWrapper.connect(process.env.NATS_URL!);
     natsWrapper.client.closed().then(() => {
       logger.info("NATS connection closed.");
-      process.exit(0); // will exit the node server when nats connection is closed.
+      process.exit(0);
     });
     process.on("SIGINT", natsWrapper.shutdown);
     process.on("SIGTERM", natsWrapper.shutdown);
