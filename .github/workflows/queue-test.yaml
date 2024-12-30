@@ -1,6 +1,9 @@
 name: queue-test
 
-on: pull_request
+on:
+  pull_request:
+    paths:
+      - "queue/**"
 
 jobs:
   build:
