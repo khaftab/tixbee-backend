@@ -11,7 +11,6 @@ import { logger } from "@kh-micro-srv/common";
 
 const start = async () => {
   checkEnvVariables(["JWT_KEY", "NATS_URL", "ORIGIN_URL", "SERVICE_NAME", "TIXBEE_SOURCE_TOKEN"]);
-
   logger.info("Queue service starting...");
   try {
     await natsWrapper.connect(process.env.NATS_URL!);
@@ -33,3 +32,4 @@ const start = async () => {
 };
 
 start();
+// Note: This is purely a websocket service without express / http server and does not have any routes. So, throwing BadRequest error will crash the server. Instead, we need to emit an event to the client to show the error message.

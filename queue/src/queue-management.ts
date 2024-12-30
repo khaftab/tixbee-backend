@@ -1,4 +1,3 @@
-import { BadRequestError } from "@kh-micro-srv/common";
 import {
   JetStreamClient,
   JetStreamManager,
@@ -56,25 +55,28 @@ class QueueManagementService {
     const queue = await this.getQueue(key);
 
     if (queue.some((entry) => entry.userId === userId)) {
-      throw new BadRequestError(`User already in ${queueType} queue`);
+      // When user opens the queue page multiple times in a tab, and then redirects to the the payment page it tries to save the details in KV multiple times (One is sufficient). (So, that even after going back to queue page, it will redirect to payment page)
+      return;
     }
-
     queue.push({ userId, timestamp: Date.now(), ticketId });
     await this.kv.put(key, JSON.stringify(queue));
-
     if (queueType === "ticket") {
       return this.getQueueStatus(ticketId, userId);
     }
   }
 
-  async removeFromQueue(ticketId: string, queueType: "ticket" | "queueTurn"): Promise<void> {
+  async removeFromQueue(
+    ticketId: string,
+    queueType: "ticket" | "queueTurn",
+    userId?: string
+  ): Promise<void> {
     const key = `${queueType}-${ticketId}`;
     let queue = await this.getQueue(key);
     if (!queue.length) {
       return;
     }
-    const userId = queue[0].userId;
-    queue = queue.filter((entry) => entry.userId !== userId);
+    const userIdToRemove = userId ?? queue[0].userId;
+    queue = queue.filter((entry) => entry.userId !== userIdToRemove);
     await this.kv.put(key, JSON.stringify(queue));
   }
 
@@ -158,6 +160,7 @@ class QueueManagementService {
   async deleteKey(ticketId: string): Promise<void> {
     await this.kv.delete(`ticket-${ticketId}`);
     await this.kv.delete(`orderExpiration-${ticketId}`);
+    await this.kv.delete(`queueTurn-${ticketId}`);
   }
 }
 

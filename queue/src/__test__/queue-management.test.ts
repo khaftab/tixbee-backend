@@ -1,5 +1,4 @@
 import { queueService } from "../queue-management";
-import { natsWrapper } from "../nats-wrapper";
 import { NatsConnection, JetStreamClient, JetStreamManager } from "nats";
 
 describe("QueueManagementService", () => {
@@ -70,18 +69,6 @@ describe("QueueManagementService", () => {
       expect(result).toHaveProperty("position");
       expect(result).toHaveProperty("estimatedWaitTime");
       expect(result).toHaveProperty("totalInQueue");
-    });
-
-    it("should throw an error if user is already in the queue", async () => {
-      // Mock existing queue with user already in it
-      mockKV.get.mockResolvedValue({
-        string: () =>
-          JSON.stringify([{ userId: "user1", timestamp: Date.now(), ticketId: "ticket1" }]),
-      });
-
-      await expect(queueService.addToQueue("ticket1", "user1", "ticket")).rejects.toThrow(
-        "User already in ticket queue"
-      );
     });
   });
 

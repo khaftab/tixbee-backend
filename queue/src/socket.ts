@@ -19,12 +19,13 @@ declare module "socket.io" {
 
 export const connectedSockets = new Map();
 
-const io = new Server({
-  path: "/api/queue", // Match the path in your ingress
+const io = new Server(3000, {
+  path: "/api/queue", // Match the path in ingress
   cors: {
-    origin: process.env.ORIGIN_URL,
+    origin: JSON.parse(process.env.ORIGIN_URL || "[]"),
     methods: ["GET", "POST"],
     credentials: true,
+    allowedHeaders: ["ticket-id", "cookie-value"],
   },
 });
 
@@ -48,7 +49,7 @@ io.on("connection", async (socket) => {
     connectedSockets.delete(socket.id);
   });
   socket.on("opt-out", async (ticketId) => {
-    await queueService.removeFromQueue(ticketId, "ticket");
+    await queueService.removeFromQueue(ticketId, "ticket", socket.currentUser.id);
     emitEventToAll("queue-update", ticketId);
     socket.emit("opt-out-success", "You have been removed from the queue");
   });
@@ -100,14 +101,18 @@ export const emitEventToAll = async (event: string, ticketId: string) => {
 };
 
 io.use((socket, next) => {
-  let cookie = socket.handshake.headers.cookie;
-  socket.ticketId = socket.handshake.headers["ticket-id"] as string;
-  if (!cookie) {
-    socket.emit("error", "Please login to view this page");
-    socket.disconnect();
-
-    return;
+  // let cookie = socket.handshake.headers.cookie;
+  const ticketId = socket.handshake.headers["ticket-id"] as string;
+  let cookie = socket.handshake.headers["cookie-value"] as string;
+  // Manully adding the cookie header from the frontend. Because the frontend might not send the cookie automatically of cookie domain attribute is different for frontned & backend.
+  if (!cookie || cookie === "undefined" || cookie === "null" || cookie === "") {
+    // Instead of emitting, use the error parameter of next()
+    return next(new Error("Please login to view this page"));
   }
+  if (!ticketId) {
+    return next(new Error("Ticket id is missing. Please leave the page and try again"));
+  }
+  socket.ticketId = ticketId;
   cookie = getCookieValue(cookie, "session");
 
   var utf8encoded = Buffer.from(cookie, "base64").toString("utf8");
@@ -117,9 +122,7 @@ io.use((socket, next) => {
     logger.info("User connected to socket", { email: payload.email, ticketId: socket.ticketId });
     socket.currentUser = payload;
   } catch (error) {
-    socket.emit("error", "Please login to view this page");
-    socket.disconnect();
-    return;
+    return next(new Error("Please login to view this page"));
   }
   next();
 });
