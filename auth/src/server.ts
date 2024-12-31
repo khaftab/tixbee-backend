@@ -11,6 +11,7 @@ const start = async () => {
       logger.info("Auth service running on port 3000");
     });
   } catch (err) {
+    // logging the error
     logger.error(err);
   }
 };
