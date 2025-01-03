@@ -1,0 +1,33 @@
+name: manifests-deploy
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "infra/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: tixbee-github-env # name of the env set in the repo settings
+    steps:
+      - uses: actions/checkout@v4 # Use latest version of checkout action
+
+        # Login to Azure
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # Get AKS credentials
+      - name: Get AKS Credentials
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: TixBee
+          cluster-name: tixbee-cluster
+
+      # Apply manifests
+      - name: Apply manifests
+        run: kubectl get pods
+        # run: kubectl apply -f infra/k8s
