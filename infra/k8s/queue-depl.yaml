@@ -12,6 +12,10 @@ spec:
       labels:
         app: queue
     spec:
+      # initContainers:
+      #   - name: wait-for-nats
+      #     image: busybox
+      #     command: ["sh", "-c", "until nslookup nats-srv; do echo waiting for nats; sleep 2; done;"]
       containers:
         - name: queue
           image: khaftab/queue
