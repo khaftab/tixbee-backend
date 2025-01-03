@@ -6,6 +6,7 @@ on:
 jobs:
   setup:
     runs-on: ubuntu-latest
+    environment: tixbee-github-env # name of the env set in the repo settings
     steps:
       - uses: actions/checkout@v3
 
