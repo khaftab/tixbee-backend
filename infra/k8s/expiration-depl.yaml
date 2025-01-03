@@ -15,14 +15,19 @@ spec:
       initContainers:
         - name: wait-for-nats
           image: busybox
-          command: ["sh", "-c", "until nslookup nats-srv; do echo waiting for nats; sleep 2; done;"]
+          command:
+            [
+              "sh",
+              "-c",
+              "until nslookup nats-srv.default.svc.cluster.local; do echo waiting for nats; sleep 2; done;",
+            ]
         - name: wait-for-expiration-redis
           image: busybox
           command:
             [
               "sh",
               "-c",
-              "until nslookup expiration-redis-srv; do echo waiting for redis; sleep 2; done;",
+              "until nslookup expiration-redis-srv.default.svc.cluster.local; do echo waiting for redis; sleep 2; done;",
             ]
       containers:
         - name: expiration
