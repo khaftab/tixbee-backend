@@ -10,7 +10,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: tixbee-github-env
+    environment: tixbee-github-env # name of the env set in the repo settings
     steps:
       - uses: actions/checkout@v4 # Use latest version of checkout action
 
@@ -32,3 +32,20 @@ jobs:
           context: ./auth
           push: true
           tags: khaftab/auth:latest,khaftab/auth:${{ github.sha }} # Tag with both latest and commit SHA
+
+        # Login to Azure
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # Get AKS credentials
+      - name: Get AKS Credentials
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: TixBee
+          cluster-name: tixbee-cluster
+
+      # Restart deployment
+      - name: Restart Deployment
+        run: kubectl rollout restart deployment auth-depl

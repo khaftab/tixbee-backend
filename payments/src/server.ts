@@ -16,6 +16,16 @@ const start = async () => {
     "TIXBEE_SOURCE_TOKEN",
     "ORIGIN_URL",
   ]);
+  logger.info("Env chekc", {
+    JWT_KEY: process.env.JWT_KEY,
+    MONGO_URI: process.env.MONGO_URI,
+    NATS_URL: process.env.NATS_URL,
+    SERVICE_NAME: process.env.SERVICE_NAME,
+    STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+    STRIPE_KEY: process.env.STRIPE_KEY,
+    TIXBEE_SOURCE_TOKEN: process.env.TIXBEE_SOURCE_TOKEN,
+    ORIGIN_URL: process.env.ORIGIN_URL,
+  });
   try {
     await natsWrapper.connect(process.env.NATS_URL!);
     natsWrapper.client.closed().then(() => {

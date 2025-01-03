@@ -29,5 +29,4 @@ jobs:
 
       # Apply manifests
       - name: Apply manifests
-        run: kubectl get pods
-        # run: kubectl apply -f infra/k8s
+        run: kubectl apply -f infra/k8s
