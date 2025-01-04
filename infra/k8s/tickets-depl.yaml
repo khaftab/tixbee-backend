@@ -12,18 +12,23 @@ spec:
       labels:
         app: tickets
     spec:
-      # initContainers:
-      #   - name: wait-for-nats
-      #     image: busybox
-      #     command: ["sh", "-c", "until nslookup nats-srv; do echo waiting for nats; sleep 2; done;"]
-      #   - name: wait-for-tickets-mongo
-      #     image: busybox
-      #     command:
-      #       [
-      #         "sh",
-      #         "-c",
-      #         "until nslookup tickets-mongo-srv; do echo waiting for mongodb; sleep 2; done;",
-      #       ]
+      initContainers:
+        - name: wait-for-nats
+          image: busybox
+          command:
+            [
+              "sh",
+              "-c",
+              "until nslookup nats-srv.default.svc.cluster.local; do echo waiting for nats; sleep 2; done;",
+            ]
+        - name: wait-for-tickets-mongo
+          image: busybox
+          command:
+            [
+              "sh",
+              "-c",
+              "until nslookup tickets-mongo-srv.default.svc.cluster.local; do echo waiting for mongodb; sleep 2; done;",
+            ]
       containers:
         - name: tickets
           image: khaftab/tickets
