@@ -95,6 +95,9 @@ jobs:
             --from-literal=STRIPE_WEBHOOK_SECRET='${{ secrets.STRIPE_WEBHOOK_SECRET }}' \
             --dry-run=client -o yaml | kubectl apply -f -
 
+      - name: Install cert-manager
+        run: kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.1/cert-manager.yaml
+
       - name: Add Ingress Nginx Controller
         run: |
           kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.1/deploy/static/provider/cloud/deploy.yaml
@@ -108,3 +111,4 @@ jobs:
       - name: Apply Infrastructure Configs
         run: |
           kubectl apply -f infra/k8s
+          kubectl apply -f infra/k8s/prod
