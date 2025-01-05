@@ -1,0 +1,22 @@
+name: Setup SSL
+on:
+  workflow_dispatch: # Manual trigger
+
+jobs:
+  setup-ssl:
+    steps:
+      - name: Install cert-manager
+        run: |
+          kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.1/cert-manager.yaml
+
+          kubectl wait --namespace cert-manager \
+            --for=condition=ready pod \
+            --selector=app.kubernetes.io/instance=cert-manager \
+            --timeout=180s
+
+      - name: Apply SSL Configurations
+        run: kubeclt apply -f infra/k8s/prod-ssl
+# Before running this workflow, make sure host name in ingress-srv points to the external ip of the ingress controller / cloud load balancder ip.
+# kubectl get service -n ingress-nginx
+# Grab the external ip and update in DNS provider.
+# In case of unssuccessful ssl generation, re running this workflow will not work. We have to see the logs and fix the issue by directly accessing the terminal.

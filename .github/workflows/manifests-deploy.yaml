@@ -29,6 +29,5 @@ jobs:
 
       # Apply manifests
       - name: Apply manifests
-        run: |
-          kubectl apply -f infra/k8s
-          kubectl apply -f infra/k8s/prod
+        run: kubectl apply -f infra/k8s
+      # Here, prod-ssl folder is not included. If any changes are made in prod-ssl folder, we have to manually trigger ssl-config.yaml workflow.

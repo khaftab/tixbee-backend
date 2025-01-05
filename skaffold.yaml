@@ -4,7 +4,6 @@ deploy:
   kubectl:
     manifests:
       - infra/k8s/*.yaml
-      - infra/k8s/dev/*.yaml
 build:
   local:
     push: false # This is the default value. Won't push the image to a registry.

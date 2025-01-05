@@ -108,3 +108,4 @@ spec:
                 name: queue-srv
                 port:
                   number: 3000
+# prod-ssl folder will be used when we trigger ssl workflow from github action. Since, the name, metadata and namsepace are same as infr/k8s/ingress-srv.yaml so, it will only update the ingress service with ssl configuration. (Won't create new ingress service)
