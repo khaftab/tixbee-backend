@@ -16,7 +16,7 @@ const start = async () => {
     "TIXBEE_SOURCE_TOKEN",
     "ORIGIN_URL",
   ]);
-  logger.info("Env chekc", {
+  logger.info("Env chekc on bootup", {
     JWT_KEY: process.env.JWT_KEY,
     MONGO_URI: process.env.MONGO_URI,
     NATS_URL: process.env.NATS_URL,
