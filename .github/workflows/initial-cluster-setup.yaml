@@ -18,8 +18,10 @@ jobs:
       - name: Get AKS Credentials
         uses: azure/aks-set-context@v3
         with:
-          resource-group: TixBee
-          cluster-name: tixbee-cluster
+          # resource-group: TixBee # yess
+          # cluster-name: tixbee-cluster
+          resource-group: tixbee-staging
+          cluster-name: tixbee-staging
 
       # Login to Docker Hub using the official action
       - name: Login to Docker Hub
