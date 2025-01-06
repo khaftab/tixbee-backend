@@ -3,8 +3,25 @@ on:
   workflow_dispatch: # Manual trigger
 
 jobs:
-  setup-ssl:
+  setup:
+    runs-on: ubuntu-latest
+    environment: tixbee-github-env # name of the env set in the repo settings
     steps:
+      - uses: actions/checkout@v3
+
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Get AKS Credentials
+        uses: azure/aks-set-context@v3
+        with:
+          # resource-group: TixBee # yess
+          # cluster-name: tixbee-cluster
+          resource-group: tixbee-staging
+          cluster-name: tixbee-staging
+
       - name: Install cert-manager
         run: |
           kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.1/cert-manager.yaml
