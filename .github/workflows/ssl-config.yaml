@@ -32,7 +32,7 @@ jobs:
             --timeout=180s
 
       - name: Apply SSL Configurations
-        run: kubeclt apply -f infra/k8s/prod-ssl
+        run: kubectl apply -f infra/k8s/prod-ssl
 # Before running this workflow, make sure host name in ingress-srv points to the external ip of the ingress controller / cloud load balancder ip.
 # kubectl get service -n ingress-nginx
 # Grab the external ip and update in DNS provider.
