@@ -11,19 +11,19 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     kubernetes.io/ingress.allow-http: "false"
-    nginx.ingress.kubernetes.io/hsts: "true"
-    nginx.ingress.kubernetes.io/hsts-include-subdomains: "true"
-    nginx.ingress.kubernetes.io/hsts-max-age: "31536000"
+    # nginx.ingress.kubernetes.io/hsts: "true"
+    # nginx.ingress.kubernetes.io/hsts-include-subdomains: "true"
+    # nginx.ingress.kubernetes.io/hsts-max-age: "31536000"
 
 spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - tixbee-backend.khaftab.me
-        - www.tixbee-backend.khaftab.me
+        - backend-tixbee.khaftab.me
+        - www.backend-tixbee.khaftab.me
       secretName: tixbee-tls
   rules:
-    - host: tixbee-backend.khaftab.me
+    - host: backend-tixbee.khaftab.me
       http:
         paths:
           - path: /api/users/?(.*)
@@ -66,7 +66,7 @@ spec:
                 port:
                   number: 3000
 
-    - host: www.tixbee-backend.khaftab.me
+    - host: www.backend-tixbee.khaftab.me
       http:
         paths:
           - path: /api/users/?(.*)
