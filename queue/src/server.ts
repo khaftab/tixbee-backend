@@ -32,4 +32,4 @@ const start = async () => {
 };
 
 start();
-// Note: This is purely a websocket service without express / http server and does not have any routes. So, throwing BadRequest error will crash the server. Instead, we need to emit an event to the client to show the error message.
+// Note- This is purely a websocket service without express / http server and does not have any routes. So, throwing BadRequest error will crash the server. Instead, we need to emit an event to the client to show the error message.

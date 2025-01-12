@@ -21,8 +21,8 @@ app.use(express.json());
 app.use(
   cookieSession({
     signed: false, // Disable encryption on cookie because JWT is already encrypted. And other services need to read the cookie as well where they might not know decryption algorithm.
-    secure: process.env.NODE_ENV !== "test", // Cookie will only be used if user is visiting our app over https connection. In test environment, we will not have https connection. So, we will set it to false.
-    sameSite: process.env.NODE_ENV === "test" ? "strict" : "none", // This is to make sure that cookie is used in cross domain requests.
+    secure: process.env.NODE_ENV !== "development", // Cookie will only be used if user is visiting our app over https connection. In test environment, we will not have https connection. So, we will set it to false.
+    sameSite: process.env.NODE_ENV === "development" ? "strict" : "none", // This is to make sure that cookie is used in cross domain requests.
     // partitioned: true,
     // domain: "ticket.dev",
     expires: new Date(Date.now() + 60 * 60 * 1000 * 24 * 7), // 7 days
