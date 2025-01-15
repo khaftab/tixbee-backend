@@ -82,7 +82,13 @@ const getOrderById = async (req: Request, res: Response) => {
   if (order[0].status !== OrderStatus.Complete) {
     order[0].ticket.ticketImagePublicId = "";
   }
-  res.status(200).send(order[0]);
+  // @ts-ignore
+  order[0].serverTime = new Date().toISOString();
+  console.log(order[0]);
+
+  res.status(200).send({ ...order[0].toObject(), serverTime: new Date().toISOString() });
+
+  // res.status(200).send(order[0]);
 };
 
 const getAllOrders = async (req: Request, res: Response) => {
