@@ -106,10 +106,32 @@ jobs:
             --from-literal=STRIPE_WEBHOOK_SECRET='${{ secrets.STRIPE_WEBHOOK_SECRET }}' \
             --dry-run=client -o yaml | kubectl apply -f -
 
-      # Install Ingress Nginx Controller for GKE
-      - name: Add Ingress Nginx Controller
+      # Replace the ingress installation step with:
+      - name: Install Autopilot-Compatible Ingress Nginx
         run: |
           kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.1/deploy/static/provider/cloud/deploy.yaml
+
+          # Patch the deployment to add required resource requests
+          kubectl patch deployment ingress-nginx-controller -n ingress-nginx -p '
+          {
+            "spec": {
+              "template": {
+                "spec": {
+                  "containers": [
+                    {
+                      "name": "controller",
+                      "resources": {
+                        "requests": {
+                          "cpu": "100m",
+                          "memory": "90Mi"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }'
 
       # Wait for ingress controller with longer timeout and better error handling
       - name: Wait for Ingress Controller
