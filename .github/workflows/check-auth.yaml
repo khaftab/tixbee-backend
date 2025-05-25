@@ -21,6 +21,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v1
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
+          install_components: 'gke-gcloud-auth-plugin'
 
       # Get GKE Credentials
       - name: Get GKE Credentials
@@ -28,6 +29,8 @@ jobs:
           gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} \
             --region ${{ secrets.GKE_ZONE }} \
             --project ${{ secrets.GCP_PROJECT_ID }}
+        env:
+          USE_GKE_GCLOUD_AUTH_PLUGIN: True
 
       - name: Verify cluster access
         run: kubectl get pods
