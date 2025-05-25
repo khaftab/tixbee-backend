@@ -1,0 +1,120 @@
+name: Initial GKE setup
+
+on:
+  workflow_dispatch: # Manual trigger button in GitHub UI
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    environment: tixbee-github-env # name of the env set in the repo settings
+    steps:
+      - uses: actions/checkout@v3
+
+      # Authenticate to Google Cloud
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      # Setup Google Cloud CLI
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          install_components: "gke-gcloud-auth-plugin"
+
+      # Get GKE Credentials
+      - name: Get GKE Credentials
+        run: |
+          gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} \
+            --region ${{ secrets.GKE_ZONE }} \
+            --project ${{ secrets.GCP_PROJECT_ID }}
+        env:
+          USE_GKE_GCLOUD_AUTH_PLUGIN: True
+
+      # Login to Docker Hub using the official action
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Set up Docker Buildx for better build performance
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Build and push in a single step
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./auth
+          push: true
+          tags: khaftab/auth:latest,khaftab/auth:${{ github.sha }} # Tag with both latest and commit SHA
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./expiration
+          push: true
+          tags: khaftab/expiration:latest,khaftab/expiration:${{ github.sha }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./orders
+          push: true
+          tags: khaftab/orders:latest,khaftab/orders:${{ github.sha }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./payments
+          push: true
+          tags: khaftab/payments:latest,khaftab/payments:${{ github.sha }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./queue
+          push: true
+          tags: khaftab/queue:latest,khaftab/queue:${{ github.sha }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./tickets
+          push: true
+          tags: khaftab/tickets:latest,khaftab/tickets:${{ github.sha }}
+
+      # Create all required secrets
+      - name: Create Kubernetes Secrets
+        run: |
+          kubectl create secret generic origin-url \
+            --from-literal=ORIGIN_URL='${{ secrets.ORIGIN_URL }}' \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl create secret generic jwt-secret \
+            --from-literal=JWT_KEY='${{ secrets.JWT_KEY }}' \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl create secret generic logtail-secret \
+            --from-literal=TIXBEE_SOURCE_TOKEN='${{ secrets.TIXBEE_SOURCE_TOKEN }}' \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl create secret generic stripe-secret \
+            --from-literal=STRIPE_KEY='${{ secrets.STRIPE_KEY }}' \
+            --from-literal=STRIPE_WEBHOOK_SECRET='${{ secrets.STRIPE_WEBHOOK_SECRET }}' \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Add Ingress Nginx Controller
+        run: |
+          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.1/deploy/static/provider/cloud/deploy.yaml
+
+          kubectl wait --namespace ingress-nginx \
+            --for=condition=ready pod \
+            --selector=app.kubernetes.io/component=controller \
+            --timeout=180s
+
+        # Apply all initial kubernetes configs. Kubernetese won't re apply anything if there is no change in the yaml file.
+      - name: Apply Infrastructure Configs
+        run: kubectl apply -f infra/k8s
