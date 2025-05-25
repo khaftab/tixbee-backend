@@ -1,4 +1,4 @@
-name: Initial GKE Setup
+name: Check auth for GKE
 
 on:
   workflow_dispatch: # Manual trigger button in GitHub UI
@@ -6,7 +6,7 @@ on:
 jobs:
   setup:
     runs-on: ubuntu-latest
-    environment: tixbee-gke-env # name of the env set in the repo settings
+    environment: tixbee-github-env # name of the env set in the repo settings
     steps:
       - uses: actions/checkout@v3
 
