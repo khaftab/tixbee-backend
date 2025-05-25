@@ -106,14 +106,21 @@ jobs:
             --from-literal=STRIPE_WEBHOOK_SECRET='${{ secrets.STRIPE_WEBHOOK_SECRET }}' \
             --dry-run=client -o yaml | kubectl apply -f -
 
-      # Replace the ingress installation step with:
-      - name: Install Autopilot-Compatible Ingress Nginx
+      # Install Ingress Nginx Controller for GKE Autopilot
+      - name: Install Ingress Nginx Controller
         run: |
+          # Install ingress-nginx
           kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.1/deploy/static/provider/cloud/deploy.yaml
 
-          # Patch the deployment to add required resource requests
-          kubectl patch deployment ingress-nginx-controller -n ingress-nginx -p '
-          {
+          # Wait for admission jobs to complete
+          kubectl wait --for=condition=complete job/ingress-nginx-admission-create -n ingress-nginx --timeout=300s
+          kubectl wait --for=condition=complete job/ingress-nginx-admission-patch -n ingress-nginx --timeout=300s
+
+          # Wait for deployment to be available
+          kubectl wait --for=condition=available deployment/ingress-nginx-controller -n ingress-nginx --timeout=300s
+
+          # Patch for Autopilot compatibility (resource requests)
+          kubectl patch deployment ingress-nginx-controller -n ingress-nginx -p '{
             "spec": {
               "template": {
                 "spec": {
@@ -133,14 +140,9 @@ jobs:
             }
           }'
 
-      # Wait for ingress controller with longer timeout and better error handling
+      # Wait for ingress controller to be ready
       - name: Wait for Ingress Controller
         run: |
-          echo "Waiting for ingress-nginx-controller deployment to be ready..."
-          kubectl wait --namespace ingress-nginx \
-            --for=condition=available deployment/ingress-nginx-controller \
-            --timeout=600s
-
           echo "Waiting for ingress-nginx-controller pods to be ready..."
           kubectl wait --namespace ingress-nginx \
             --for=condition=ready pod \
