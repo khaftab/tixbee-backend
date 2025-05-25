@@ -44,42 +44,42 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       # Build and push in a single step
-      - name: Build and push
+      - name: Build and push Auth service
         uses: docker/build-push-action@v5
         with:
           context: ./auth
           push: true
-          tags: khaftab/auth:latest,khaftab/auth:${{ github.sha }} # Tag with both latest and commit SHA
+          tags: khaftab/auth:latest,khaftab/auth:${{ github.sha }}
 
-      - name: Build and push
+      - name: Build and push Expiration service
         uses: docker/build-push-action@v5
         with:
           context: ./expiration
           push: true
           tags: khaftab/expiration:latest,khaftab/expiration:${{ github.sha }}
 
-      - name: Build and push
+      - name: Build and push Orders service
         uses: docker/build-push-action@v5
         with:
           context: ./orders
           push: true
           tags: khaftab/orders:latest,khaftab/orders:${{ github.sha }}
 
-      - name: Build and push
+      - name: Build and push Payments service
         uses: docker/build-push-action@v5
         with:
           context: ./payments
           push: true
           tags: khaftab/payments:latest,khaftab/payments:${{ github.sha }}
 
-      - name: Build and push
+      - name: Build and push Queue service
         uses: docker/build-push-action@v5
         with:
           context: ./queue
           push: true
           tags: khaftab/queue:latest,khaftab/queue:${{ github.sha }}
 
-      - name: Build and push
+      - name: Build and push Tickets service
         uses: docker/build-push-action@v5
         with:
           context: ./tickets
@@ -106,15 +106,29 @@ jobs:
             --from-literal=STRIPE_WEBHOOK_SECRET='${{ secrets.STRIPE_WEBHOOK_SECRET }}' \
             --dry-run=client -o yaml | kubectl apply -f -
 
+      # Install Ingress Nginx Controller for GKE
       - name: Add Ingress Nginx Controller
         run: |
           kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.1/deploy/static/provider/cloud/deploy.yaml
 
+      # Wait for ingress controller with longer timeout and better error handling
+      - name: Wait for Ingress Controller
+        run: |
+          echo "Waiting for ingress-nginx-controller deployment to be ready..."
+          kubectl wait --namespace ingress-nginx \
+            --for=condition=available deployment/ingress-nginx-controller \
+            --timeout=600s
+
+          echo "Waiting for ingress-nginx-controller pods to be ready..."
           kubectl wait --namespace ingress-nginx \
             --for=condition=ready pod \
             --selector=app.kubernetes.io/component=controller \
-            --timeout=180s
+            --timeout=600s
 
-        # Apply all initial kubernetes configs. Kubernetese won't re apply anything if there is no change in the yaml file.
+          echo "Checking ingress controller status..."
+          kubectl get pods -n ingress-nginx
+          kubectl get service -n ingress-nginx
+
+      # Apply all initial kubernetes configs
       - name: Apply Infrastructure Configs
         run: kubectl apply -f infra/k8s
