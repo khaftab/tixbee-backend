@@ -1,0 +1,42 @@
+name: GKE Authentication Test
+on:
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  gke-auth-check:
+    name: Test GKE Authentication
+    runs-on: ubuntu-latest
+    environment: tixbee-gke-env
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Google Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+      with:
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        export_default_credentials: true
+
+    - name: Configure kubectl
+      run: |
+        gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} \
+          --zone ${{ secrets.GKE_ZONE }} \
+          --project ${{ secrets.GCP_PROJECT_ID }}
+
+    - name: Verify cluster access
+      run: |
+        echo "=== Cluster Info ==="
+        kubectl cluster-info
+        
+        echo "\n=== Nodes ==="
+        kubectl get nodes -o wide
+        
+        echo "\n=== Service Account Permissions ==="
+        kubectl auth can-i --list
+        
+        echo "\n=== Test Deployment ==="
+        kubectl create deployment test-auth --image=nginx:alpine --replicas=1
+        kubectl get pods -w --timeout=30s
+        kubectl delete deployment test-auth
