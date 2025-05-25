@@ -1,64 +1,28 @@
-name: GKE Authentication Test
+name: Initial GKE Setup
+
 on:
-  workflow_dispatch:
+  workflow_dispatch: # Manual trigger button in GitHub UI
 
 jobs:
-  gke-auth-check:
-    name: Test GKE Authentication
+  setup:
     runs-on: ubuntu-latest
-    environment: tixbee-gke-env
-
+    environment: tixbee-gke-env # name of the env set in the repo settings
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v1
-      with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
+      # Setup Google Cloud CLI
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-    - name: Set up Google Cloud SDK
-      uses: google-github-actions/setup-gcloud@v1
-      with:
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
-        install_components: 'gke-gcloud-auth-plugin kubectl'
+      # Get GKE Credentials
+      - name: Get GKE Credentials
+        run: |
+          gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} \
+            --region ${{ secrets.GKE_ZONE }} \
+            --project ${{ secrets.GCP_PROJECT_ID }}
 
-    - name: Configure kubectl with auth plugin
-      run: |
-        # Ensure the auth plugin is properly installed and in PATH
-        sudo apt-get update
-        sudo apt-get install -y google-cloud-sdk-gke-gcloud-auth-plugin
-        
-        # Verify installation
-        gke-gcloud-auth-plugin --version
-        
-        # Configure kubeconfig to use the plugin
-        gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} \
-          --zone ${{ secrets.GKE_ZONE }} \
-          --project ${{ secrets.GCP_PROJECT_ID }}
-        
-        # Update kubeconfig to use the plugin explicitly
-        kubectl config set-credentials gke \
-          --auth-provider=gcp \
-          --auth-provider-arg=cmd-args=config config-helper --format=json \
-          --auth-provider-arg=cmd-path=gke-gcloud-auth-plugin \
-          --auth-provider-arg=expiry-key='{.credential.token_expiry}' \
-          --auth-provider-arg=token-key='{.credential.access_token}'
-        
-        # Verify connectivity
-        kubectl cluster-info
-
-    - name: Verify cluster access
-      run: |
-        echo "=== Nodes ==="
-        kubectl get nodes -o wide
-        
-        echo "\n=== Service Account Permissions ==="
-        kubectl auth can-i --list
-        
-        echo "\n=== Test Deployment ==="
-        kubectl create deployment test-auth --image=nginx:alpine --replicas=1
-        kubectl wait --for=condition=available --timeout=60s deployment/test-auth
-        kubectl get pods
-        kubectl delete deployment test-auth
+      - name: Verify cluster access
+        run: kubectl get pods
