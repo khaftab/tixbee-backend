@@ -71,24 +71,24 @@ const createOrder = async (req: Request, res: Response) => {
 };
 
 const getOrderById = async (req: Request, res: Response) => {
-  // req.params.id is a string. like "66c6d8f4f2a83ed3e0942234"
-  const order = await Order.find({ _id: req.params.id, userId: req.currentUser!.id }).populate(
+  const order = await Order.findOne({ _id: req.params.id, userId: req.currentUser!.id }).populate(
     "ticket"
-  ); // returns an array with one element
+  );
 
-  if (!order.length) {
+  if (!order) {
     throw new NotFoundError();
   }
-  if (order[0].status !== OrderStatus.Complete) {
-    order[0].ticket.ticketImagePublicId = "";
+
+  // Hide ticketImagePublicId if order is not complete
+  if (order.status !== OrderStatus.Complete && order.ticket) {
+    order.ticket.ticketImagePublicId = "";
   }
+
+  const orderObj = order.toJSON(); // Use toJSON() instead of toObject()
   // @ts-ignore
-  order[0].serverTime = new Date().toISOString();
-  console.log(order[0]);
+  orderObj.serverTime = new Date().toISOString();
 
-  res.status(200).send({ ...order[0].toObject(), serverTime: new Date().toISOString() });
-
-  // res.status(200).send(order[0]);
+  res.status(200).send(orderObj);
 };
 
 const getAllOrders = async (req: Request, res: Response) => {

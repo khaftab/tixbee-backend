@@ -96,7 +96,7 @@ const webhook = async (req: Request, res: Response) => {
   const sig = req.headers["stripe-signature"];
   let event;
   try {
-    // Use the production webhook secret
+    // Use the production webhook secret for production environment or the test secret for development by running `stripe listen --forward-to https://localhost/api/payments/webhook --skip-verify`
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
     event = stripe.webhooks.constructEvent(req.body, sig!, webhookSecret);
   } catch (err: any) {
