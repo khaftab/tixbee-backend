@@ -33,18 +33,27 @@ jobs:
           push: true
           tags: khaftab/payments:latest,khaftab/payments:${{ github.sha }}
 
-        # Login to Azure
-      - name: Azure login
-        uses: azure/login@v1
+        # Authenticate to Google Cloud
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      # Get AKS credentials
-      - name: Get AKS Credentials
-        uses: azure/aks-set-context@v3
+      # Setup Google Cloud CLI
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
         with:
-          resource-group: ${{ secrets.AZURE_RESOURCE_GROUP }}
-          cluster-name: ${{ secrets.AZURE_CLUSTER_NAME }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          install_components: "gke-gcloud-auth-plugin"
+
+      # Get GKE Credentials
+      - name: Get GKE Credentials
+        run: |
+          gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} \
+            --region ${{ secrets.GKE_ZONE }} \
+            --project ${{ secrets.GCP_PROJECT_ID }}
+        env:
+          USE_GKE_GCLOUD_AUTH_PLUGIN: True
 
       # Restart deployment
       - name: Restart Deployment
