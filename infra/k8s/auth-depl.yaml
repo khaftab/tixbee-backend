@@ -12,23 +12,23 @@ spec:
       labels:
         app: auth
     spec:
-      initContainers:
-        - name: wait-for-nats
-          image: busybox
-          command:
-            [
-              "sh",
-              "-c",
-              "until nslookup nats-srv.default.svc.cluster.local; do echo waiting for nats; sleep 2; done;",
-            ]
-        - name: wait-for-auth-mongo
-          image: busybox
-          command:
-            [
-              "sh",
-              "-c",
-              "until nslookup auth-mongo-srv.default.svc.cluster.local; do echo waiting for mongodb; sleep 2; done;",
-            ]
+      # initContainers:
+      #   - name: wait-for-nats
+      #     image: busybox
+      #     command:
+      #       [
+      #         "sh",
+      #         "-c",
+      #         "until nslookup nats-srv.default.svc.cluster.local; do echo waiting for nats; sleep 2; done;",
+      #       ]
+      #   - name: wait-for-auth-mongo
+      #     image: busybox
+      #     command:
+      #       [
+      #         "sh",
+      #         "-c",
+      #         "until nslookup auth-mongo-srv.default.svc.cluster.local; do echo waiting for mongodb; sleep 2; done;",
+      #       ]
       containers:
         - name: auth
           image: khaftab/auth
