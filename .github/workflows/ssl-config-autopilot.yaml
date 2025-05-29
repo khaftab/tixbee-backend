@@ -1,0 +1,111 @@
+name: Setup SSL for GKE autopilot
+
+on:
+  workflow_dispatch: # Manual trigger button in GitHub UI
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    environment: tixbee-github-env # name of the env set in the repo settings
+    steps:
+      - uses: actions/checkout@v3
+
+      # Authenticate to Google Cloud
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      # Setup Google Cloud CLI
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          install_components: "gke-gcloud-auth-plugin"
+
+      # Get GKE Credentials
+      - name: Get GKE Credentials
+        run: |
+          gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} \
+            --region ${{ secrets.GKE_ZONE }} \
+            --project ${{ secrets.GCP_PROJECT_ID }}
+        env:
+          USE_GKE_GCLOUD_AUTH_PLUGIN: True
+
+      # Install Helm
+      - name: Install Helm
+        run: |
+          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+      # Install cert-manager with GKE-compatible configuration
+      - name: Install cert-manager
+        run: |
+          # Add cert-manager Helm repository
+          helm repo add jetstack https://charts.jetstack.io
+          helm repo update
+
+          # Create cert-manager namespace
+          kubectl create namespace cert-manager --dry-run=client -o yaml | kubectl apply -f -
+
+          # Install cert-manager with GKE Autopilot-compatible settings
+          helm install cert-manager jetstack/cert-manager \
+            --namespace cert-manager \
+            --version v1.14.1 \
+            --set installCRDs=true \
+            --set "extraArgs={--leader-election-namespace=cert-manager}" \
+            --set global.leaderElection.namespace=cert-manager \
+            --set resources.requests.cpu=100m \
+            --set resources.requests.memory=128Mi \
+            --set resources.limits.cpu=500m \
+            --set resources.limits.memory=512Mi \
+            --set webhook.resources.requests.cpu=50m \
+            --set webhook.resources.requests.memory=64Mi \
+            --set webhook.resources.limits.cpu=200m \
+            --set webhook.resources.limits.memory=256Mi \
+            --set cainjector.resources.requests.cpu=50m \
+            --set cainjector.resources.requests.memory=64Mi \
+            --set cainjector.resources.limits.cpu=200m \
+            --set cainjector.resources.limits.memory=256Mi \
+            --set startupapicheck.resources.requests.cpu=50m \
+            --set startupapicheck.resources.requests.memory=64Mi \
+            --set startupapicheck.resources.limits.cpu=100m \
+            --set startupapicheck.resources.limits.memory=128Mi \
+            --set securityContext.runAsNonRoot=true \
+            --set securityContext.runAsUser=1001 \
+            --set webhook.securityContext.runAsNonRoot=true \
+            --set webhook.securityContext.runAsUser=1001 \
+            --set cainjector.securityContext.runAsNonRoot=true \
+            --set cainjector.securityContext.runAsUser=1001 \
+            --wait \
+            --timeout=300s
+
+      # Verify cert-manager installation
+      - name: Verify cert-manager installation
+        run: |
+          kubectl wait --namespace cert-manager \
+            --for=condition=ready pod \
+            --selector=app.kubernetes.io/name=cert-manager \
+            --timeout=180s
+
+          kubectl wait --namespace cert-manager \
+            --for=condition=ready pod \
+            --selector=app.kubernetes.io/name=cainjector \
+            --timeout=180s
+
+          kubectl wait --namespace cert-manager \
+            --for=condition=ready pod \
+            --selector=app.kubernetes.io/name=webhook \
+            --timeout=180s
+
+      # Check cert-manager status
+      - name: Check cert-manager status
+        run: |
+          kubectl get pods -n cert-manager
+          kubectl logs -n cert-manager deployment/cert-manager --tail=10
+
+      - name: Apply SSL Configurations
+        run: kubectl apply -f infra/k8s/prod-ssl
+# Before running this workflow, make sure host name in ingress-srv points to the external ip of the ingress controller / cloud load balancer ip.
+# kubectl get service -n ingress-nginx
+# Grab the external ip and update in DNS provider.
+# In case of unsuccessful ssl generation, re running this workflow will not work. We have to see the logs and fix the issue by directly accessing the terminal.

@@ -32,13 +32,6 @@ spec:
       containers:
         - name: tickets
           image: khaftab/tickets
-          resources:
-            requests:
-              memory: "512Mi"
-              cpu: "250m"
-            limits:
-              memory: "1Gi"
-              cpu: "500m"
           env:
             - name: NATS_URL
               value: http://nats-srv:4222

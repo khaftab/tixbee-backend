@@ -32,13 +32,6 @@ spec:
       containers:
         - name: auth
           image: khaftab/auth
-          resources:
-            requests:
-              memory: "512Mi"
-              cpu: "250m"
-            limits:
-              memory: "1Gi"
-              cpu: "500m"
           env:
             - name: MONGO_URI
               value: mongodb://auth-mongo-srv:27017/auth

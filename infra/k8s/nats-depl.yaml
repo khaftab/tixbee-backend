@@ -15,13 +15,6 @@ spec:
       containers:
         - name: nats
           image: nats:latest
-          resources:
-            requests:
-              memory: "512Mi"
-              cpu: "250m"
-            limits:
-              memory: "1Gi"
-              cpu: "500m"
           args: ["-p", "4222", "-m", "8222", "-js"]
 ---
 apiVersion: v1
