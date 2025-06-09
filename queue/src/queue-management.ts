@@ -146,6 +146,22 @@ class QueueManagementService {
       return [];
     }
   }
+
+  async notifyNextInQueue(ticketId: string): Promise<QueueEntry | null> {
+    const queue = await this.getQueue(`ticket-${ticketId}`);
+    if (queue.length > 0) {
+      const nextUser = queue[0];
+      await this.removeFromQueue(ticketId, "ticket");
+      return nextUser;
+    }
+    return null;
+  }
+
+  async deleteKey(ticketId: string): Promise<void> {
+    await this.kv.delete(`ticket-${ticketId}`);
+    await this.kv.delete(`orderExpiration-${ticketId}`);
+    await this.kv.delete(`queueTurn-${ticketId}`);
+  }
 }
 
 export const queueService = new QueueManagementService();
