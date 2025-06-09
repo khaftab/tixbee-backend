@@ -12,26 +12,16 @@ spec:
       labels:
         app: auth
     spec:
-      # initContainers:
-      #   - name: wait-for-nats
-      #     image: busybox
-      #     command:
-      #       [
-      #         "sh",
-      #         "-c",
-      #         "until nslookup nats-srv.default.svc.cluster.local; do echo waiting for nats; sleep 2; done;",
-      #       ]
-      #   - name: wait-for-auth-mongo
-      #     image: busybox
-      #     command:
-      #       [
-      #         "sh",
-      #         "-c",
-      #         "until nslookup auth-mongo-srv.default.svc.cluster.local; do echo waiting for mongodb; sleep 2; done;",
-      #       ]
       containers:
         - name: auth
           image: khaftab/auth
+          # resources: # Needed ONLY when deploying GKE autopilot. (For all services)
+          #   requests:
+          #     memory: "512Mi"
+          #     cpu: "250m"
+          #   limits:
+          #     memory: "1Gi"
+          #     cpu: "500m"
           env:
             - name: MONGO_URI
               value: mongodb://auth-mongo-srv:27017/auth
