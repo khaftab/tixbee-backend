@@ -1,0 +1,105 @@
+name: Initial EC2 (K3s) setup
+
+on:
+  workflow_dispatch:
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    environment: tixbee-github-env
+    steps:
+      - uses: actions/checkout@v3
+
+      # Connect to EC2 K3s Cluster (Replaces all 3 GCP steps)
+      - name: Set Kubernetes Context
+        uses: azure/k8s-set-context@v4
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+      # Login to Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Build and push all 6 services (unchanged)
+      - name: Build and push auth
+        uses: docker/build-push-action@v5
+        with:
+          context: ./auth
+          push: true
+          tags: khaftab/auth:latest,khaftab/auth:${{ github.sha }}
+
+      - name: Build and push expiration
+        uses: docker/build-push-action@v5
+        with:
+          context: ./expiration
+          push: true
+          tags: khaftab/expiration:latest,khaftab/expiration:${{ github.sha }}
+
+      - name: Build and push orders
+        uses: docker/build-push-action@v5
+        with:
+          context: ./orders
+          push: true
+          tags: khaftab/orders:latest,khaftab/orders:${{ github.sha }}
+
+      - name: Build and push payments
+        uses: docker/build-push-action@v5
+        with:
+          context: ./payments
+          push: true
+          tags: khaftab/payments:latest,khaftab/payments:${{ github.sha }}
+
+      - name: Build and push queue
+        uses: docker/build-push-action@v5
+        with:
+          context: ./queue
+          push: true
+          tags: khaftab/queue:latest,khaftab/queue:${{ github.sha }}
+
+      - name: Build and push tickets
+        uses: docker/build-push-action@v5
+        with:
+          context: ./tickets
+          push: true
+          tags: khaftab/tickets:latest,khaftab/tickets:${{ github.sha }}
+
+      # Create all required secrets (unchanged)
+      - name: Create Kubernetes Secrets
+        run: |
+          kubectl create secret generic origin-url \
+            --from-literal=ORIGIN_URL='${{ secrets.ORIGIN_URL }}' \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl create secret generic jwt-secret \
+            --from-literal=JWT_KEY='${{ secrets.JWT_KEY }}' \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl create secret generic logtail-secret \
+            --from-literal=TIXBEE_SOURCE_TOKEN='${{ secrets.TIXBEE_SOURCE_TOKEN }}' \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl create secret generic stripe-secret \
+            --from-literal=STRIPE_KEY='${{ secrets.STRIPE_KEY }}' \
+            --from-literal=STRIPE_WEBHOOK_SECRET='${{ secrets.STRIPE_WEBHOOK_SECRET }}' \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      # Install Ingress Nginx (unchanged)
+      - name: Add Ingress Nginx Controller
+        run: |
+          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.1/deploy/static/provider/cloud/deploy.yaml
+
+          kubectl wait --namespace ingress-nginx \
+            --for=condition=ready pod \
+            --selector=app.kubernetes.io/component=controller \
+            --timeout=180s
+
+      # Apply Infrastructure Configs (unchanged)
+      - name: Apply Infrastructure Configs
+        run: kubectl apply -f infra/k8s
