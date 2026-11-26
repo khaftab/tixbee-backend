@@ -2,7 +2,7 @@
 
 Backend for the TixBee platform—a fully microservices system written in **Node.js + TypeScript**. It handles everything from authentication and ticketing to queue management and payments, all communicating through a event-driven architecture.
 
-> For frontned repository [Click here](https://github.com/khaftab/code-sprint-frontend){:target="\_blank"} or check out the [live preview here](https://tixbee.khaftab.me){:target="\_blank"}
+> For frontned repository [Click here](https://github.com/khaftab/code-sprint-frontend) or check out the [live preview here](https://tixbee.khaftab.me)
 
 ## ⚙️ Key Features
 
@@ -213,7 +213,7 @@ In your backend GitHub repo, add the following secrets (adjust according to your
 | `ORIGIN_URL`            | CORS allowed origins                                                                                                                                                                        |
 | `STRIPE_KEY`            | Your Stripe secret key                                                                                                                                                                      |
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret. Register the `https://<your-domain>/api/payments/webhook` endpoint as a webhook in your Stripe dashboard, then copy the "Signing secret" provided by Stripe. |
-| `TIXBEE_SOURCE_TOKEN`   | [BetterStack](https://betterstack.com/telemetry){:target="\_blank"} Logtail token (for remote logging)                                                                                      |
+| `TIXBEE_SOURCE_TOKEN`   | [BetterStack](https://betterstack.com/telemetry) Logtail token (for remote logging)                                                                                                         |
 
 ### 🏁 3. Initial Cluster Setup
 
@@ -329,4 +329,4 @@ Once SSL is working and the API is live under your domain, your backend is ready
 
 ## 📬 Contact
 
-For suggestions, questions, or collaborations, feel free to reach out via [GitHub Issues](https://github.com/khaftab/code-sprint-backend/issues){:target="\_blank"} or connect with me on [LinkedIn](https://www.linkedin.com/in/kh-aftab-uddin-ahmed){:target="\_blank"}.
+For suggestions, questions, or collaborations, feel free to reach out via [GitHub Issues](https://github.com/khaftab/code-sprint-backend/issues) or connect with me on [LinkedIn](https://www.linkedin.com/in/kh-aftab-uddin-ahmed).

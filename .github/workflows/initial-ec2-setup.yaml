@@ -90,15 +90,19 @@ jobs:
             --from-literal=STRIPE_WEBHOOK_SECRET='${{ secrets.STRIPE_WEBHOOK_SECRET }}' \
             --dry-run=client -o yaml | kubectl apply -f -
 
-      # Install Ingress Nginx (unchanged)
+      # Install Ingress Nginx
       - name: Add Ingress Nginx Controller
         run: |
-          kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.1/deploy/static/provider/cloud/deploy.yaml
+          kubectl apply -f infra/k8s/ingress-nginx.yaml
+          kubectl rollout status deployment/ingress-nginx-controller \
+            -n ingress-nginx --timeout=300s
 
-          kubectl wait --namespace ingress-nginx \
-            --for=condition=ready pod \
-            --selector=app.kubernetes.io/component=controller \
-            --timeout=180s
+      - name: Debug ingress on failure
+        if: failure()
+        run: |
+          kubectl get pods -n ingress-nginx -o wide
+          kubectl describe pod -n ingress-nginx -l app.kubernetes.io/component=controller
+          kubectl logs -n ingress-nginx -l app.kubernetes.io/component=controller --tail=100
 
       # Apply Infrastructure Configs (unchanged)
       - name: Apply Infrastructure Configs
