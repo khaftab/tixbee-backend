@@ -1,0 +1,26 @@
+name: manifests-deploy-ec2
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "infra/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: tixbee-github-env
+    steps:
+      - uses: actions/checkout@v4
+
+      # Connect to EC2 K3s Cluster
+      - name: Set Kubernetes Context
+        uses: azure/k8s-set-context@v4
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+      # Apply manifests
+      - name: Apply manifests
+        run: kubectl apply -f infra/k8s

@@ -1,11 +1,7 @@
-name: manifests-deploy
+name: manifests-deploy-gke
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "infra/**"
+  workflow_dispatch: # Only runs when manually triggered from the GitHub Actions
 
 jobs:
   build:

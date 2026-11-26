@@ -15,6 +15,8 @@ spec:
       containers:
         - name: auth-mongo
           image: mongo
+          # Needed for grant permission on K3s/Ubuntu
+          command: ["mongod", "--bind_ip_all"]
 ---
 apiVersion: v1
 kind: Service
