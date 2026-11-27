@@ -10,24 +10,19 @@ metadata:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-    kubernetes.io/ingress.allow-http: "false"
-    # nginx.ingress.kubernetes.io/hsts: "true"
-    # nginx.ingress.kubernetes.io/hsts-include-subdomains: "true"
-    # nginx.ingress.kubernetes.io/hsts-max-age: "31536000"
-
 spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - backend-tixbee.khaftab.me
-        - www.backend-tixbee.khaftab.me
+        - backend-tixbee.khahmed.in
+        - www.backend-tixbee.khahmed.in
       secretName: tixbee-tls
   rules:
-    - host: backend-tixbee.khaftab.me
+    - host: backend-tixbee.khahmed.in
       http:
         paths:
           - path: /api/users/?(.*)
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: auth-srv
@@ -35,7 +30,7 @@ spec:
                   number: 3000
 
           - path: /api/tickets/?(.*)
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: tickets-srv
@@ -43,7 +38,7 @@ spec:
                   number: 3000
 
           - path: /api/orders/?(.*)
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: orders-srv
@@ -51,7 +46,7 @@ spec:
                   number: 3000
 
           - path: /api/payments/?(.*)
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: payments-srv
@@ -59,18 +54,18 @@ spec:
                   number: 3000
 
           - path: /api/queue/?(.*)
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: queue-srv
                 port:
                   number: 3000
 
-    - host: www.backend-tixbee.khaftab.me
+    - host: www.backend-tixbee.khahmed.in
       http:
         paths:
           - path: /api/users/?(.*)
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: auth-srv
@@ -78,7 +73,7 @@ spec:
                   number: 3000
 
           - path: /api/tickets/?(.*)
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: tickets-srv
@@ -86,7 +81,7 @@ spec:
                   number: 3000
 
           - path: /api/orders/?(.*)
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: orders-srv
@@ -94,7 +89,7 @@ spec:
                   number: 3000
 
           - path: /api/payments/?(.*)
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: payments-srv
@@ -102,10 +97,9 @@ spec:
                   number: 3000
 
           - path: /api/queue/?(.*)
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: queue-srv
                 port:
                   number: 3000
-# prod-ssl folder will be used when we trigger ssl workflow from github action. Since, the name, metadata and namsepace are same as infr/k8s/ingress-srv.yaml so, it will only update the ingress service with ssl configuration. (Won't create new ingress service)
