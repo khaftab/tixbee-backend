@@ -11,11 +11,10 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    # - host: localhost
     - http:
         paths:
           - path: /api/users/?(.*)
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: auth-srv
@@ -23,7 +22,7 @@ spec:
                   number: 3000
 
           - path: /api/tickets/?(.*)
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: tickets-srv
@@ -31,7 +30,7 @@ spec:
                   number: 3000
 
           - path: /api/orders/?(.*)
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: orders-srv
@@ -39,7 +38,7 @@ spec:
                   number: 3000
 
           - path: /api/payments/?(.*)
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: payments-srv
@@ -47,7 +46,7 @@ spec:
                   number: 3000
 
           - path: /api/queue/?(.*)
-            pathType: Prefix
+            pathType: ImplementationSpecific
             backend:
               service:
                 name: queue-srv
