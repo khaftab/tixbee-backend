@@ -10,27 +10,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # Authenticate to Google Cloud
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v1
+      # Connect to EC2 K3s Cluster
+      - name: Set Kubernetes Context
+        uses: azure/k8s-set-context@v4
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
-
-      # Setup Google Cloud CLI
-      - name: Set up Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
-        with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          install_components: "gke-gcloud-auth-plugin"
-
-      # Get GKE Credentials
-      - name: Get GKE Credentials
-        run: |
-          gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} \
-            --region ${{ secrets.GKE_ZONE }} \
-            --project ${{ secrets.GCP_PROJECT_ID }}
-        env:
-          USE_GKE_GCLOUD_AUTH_PLUGIN: True
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
 
       - name: Install cert-manager
         run: |
@@ -43,6 +28,7 @@ jobs:
 
       - name: Apply SSL Configurations
         run: kubectl apply -f infra/k8s/prod-ssl
+
 # Before running this workflow, make sure host name in ingress-srv points to the external ip of the ingress controller / cloud load balancder ip.
 # kubectl get service -n ingress-nginx
 # Grab the external ip and update in DNS provider.
